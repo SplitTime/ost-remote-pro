@@ -54,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
         context,
         MaterialPageRoute(
           builder: (context) =>
-              const MyHomePage(title: 'Flutter Demo Home Page'),
+              const EventSelect(),
         ),
       );
     } catch (e) {
