@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'pages/event_select.dart';
 
 void main() {
   runApp(const MyApp());
@@ -73,7 +74,7 @@ class LoginPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MyHomePage(title: 'Flutter Demo Home Page')),
+                  MaterialPageRoute(builder: (context) => const EventSelect()),
                 );
               },
               child: const Text('Login'),
