@@ -20,17 +20,19 @@ class _EventSelectState extends State<EventSelect> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             CustomDropDownMenu(
+              // TODO: Replace with actual event list networkManager functions
               items: const ["Event A", "Event B", "Event C"], 
               hint: 'Select Event',
               onChanged: (value) {
-                // TODO: Handle event selection
+                // TODO: create variable to hold selected event, pass in via button press
               },
             ),
            CustomDropDownMenu(
+              // TODO: Replace with actual event list networkManager functions
               items: const ["Station A", "Station B", "Station C"], 
               hint: 'Select Aid Station',
               onChanged: (value) {
-                // TODO: Handle aid selection
+                // TODO: create variable to hold selected event, pass in via button press
               },
             ),
             ElevatedButton(
