@@ -35,4 +35,9 @@ class NetworkManager {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
+
+  Future<List<String>> fetchEditableEvents() async {
+    // TODO: Implement fetching editable events using the stored token
+    return [];
+  }
 }
