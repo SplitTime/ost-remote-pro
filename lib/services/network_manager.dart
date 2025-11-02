@@ -36,8 +36,44 @@ class NetworkManager {
     return prefs.getString('token');
   }
 
-  Future<List<String>> fetchEditableEvents() async {
-    // TODO: Implement fetching editable events using the stored token
-    return [];
+  Future<Map<String, List<String>>> fetchEventDetails() async {
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('No authentication token found');
+    }
+
+    final response = await http.get(
+      Uri.parse('${_baseUrl}api/v1/events?filter[editable]=true'),
+      headers: {
+        'Authorization': token,
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      print('\nParsed data: $data');  // Debug
+
+      // Build a map of event name -> aid stations
+      Map<String, List<String>> eventAidStations = {};
+      if (data['data'] != null && data['data'] is List) {
+        for (var event in data['data']) {
+          if (event['attributes'] != null && event['attributes']['name'] != null) {
+            final eventName = event['attributes']['name'].toString();
+            final splits = event['attributes']['splitNames'];
+            if (splits != null && splits is List) {
+              eventAidStations[eventName] = List<String>.from(splits);
+            } else {
+              eventAidStations[eventName] = [];
+            }
+          }
+        }
+      }
+      return eventAidStations;
+    } else if (response.statusCode == 401) {
+      throw Exception('\nAuthentication failed. Please try logging in again.');
+    } else {
+      throw Exception('\nFailed to load events (${response.statusCode}): ${response.body}');
+    }
   }
 }
