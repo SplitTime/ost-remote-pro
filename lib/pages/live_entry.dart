@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:open_split_time_v2/widgets/app_menu_button.dart';
+import 'package:open_split_time_v2/widgets/app_menu_drawer.dart';
 
 class LiveEntryScreen extends StatefulWidget {
   const LiveEntryScreen({super.key});
@@ -19,8 +19,8 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Live Entry'),
-        actions: const [AppMenuButton()],
       ),
+      endDrawer: const AppMenuDrawer(),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
