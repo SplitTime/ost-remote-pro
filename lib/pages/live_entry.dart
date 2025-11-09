@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/widgets/app_menu_drawer.dart';
+import 'package:open_split_time_v2/widgets/numpad.dart';
 import 'package:open_split_time_v2/widgets/two_state_toggle.dart';
 
 class LiveEntryScreen extends StatefulWidget {
@@ -102,6 +103,26 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
                 ),
               ],
             ),
+
+            const SizedBox(height: 100),
+            // Numpad
+            Expanded(
+              child: 
+                NumPad(
+                  onNumberPressed: (digit) {
+                    setState(() {
+                      bibNumber += digit;
+                    });
+                  },
+                  onBackspace: () {
+                    setState(() {
+                      if (bibNumber.isNotEmpty) {
+                        bibNumber = bibNumber.substring(0, bibNumber.length - 1);
+                      }
+                    });
+                  },
+                ) 
+              )
           ],
         ),
       ),
