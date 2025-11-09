@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_split_time_v2/pages/live_entry.dart';
 import 'package:open_split_time_v2/pages/login.dart';
 
 void main() {
@@ -17,6 +18,9 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const LoginPage(),
+      routes: {
+        '/liveEntry': (context) => const LiveEntryScreen(),
+      },
     );
   }
 }

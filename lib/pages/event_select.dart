@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_split_time_v2/pages/live_entry.dart';
 import 'package:open_split_time_v2/widgets/dropdown_menu.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
 
@@ -49,6 +50,26 @@ class _EventSelectState extends State<EventSelect> {
       });
     }
   }
+
+  void _navigateToLiveEntry(BuildContext context) {
+    if (_selectedEvent != null && _selectedAidStation != null) {
+      Navigator.pushNamed(
+        context,
+        '/liveEntry',
+        arguments: {
+          'event': _selectedEvent!,
+          'aidStation': _selectedAidStation!,
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select both event and aid station.'),
+        ),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -102,11 +123,9 @@ class _EventSelectState extends State<EventSelect> {
                         },
                       ),
                       ElevatedButton(
-                        onPressed: () {
-                          // TODO: Navigate to the next page or perform an action
-                        },
+                        onPressed: () => _navigateToLiveEntry(context),
                         child: const Text('Begin Live Entry'),
-                      ),
+                      )
                     ],
                   ),
       ),
