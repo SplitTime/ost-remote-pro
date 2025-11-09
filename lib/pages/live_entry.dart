@@ -9,14 +9,23 @@ class LiveEntryScreen extends StatefulWidget {
   State<LiveEntryScreen> createState() => _LiveEntryScreenState();
 }
 
-class _LiveEntryScreenState extends State<LiveEntryScreen> {
-    // TODO: Use options for writing live entry data
-    bool isContinuing = true;
-    bool hasPacer = true;
 
-    // TODO: Update with real athlete data
-    String bibNumber = '';
-    String athleteName = 'Demo Athlete';
+class _LiveEntryScreenState extends State<LiveEntryScreen> {
+  void stationIn() {
+    // TODO: Implement station in logic
+  }
+
+  void stationOut() {
+    // TODO: Implement station out logic
+  }
+
+  // TODO: Use options for writing live entry data
+  bool isContinuing = true;
+  bool hasPacer = true;
+
+  // TODO: Update with real athlete data
+  String bibNumber = '';
+  String athleteName = 'Demo Athlete';
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +89,19 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
             const SizedBox(height: 24),
             
             // Buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: stationIn,
+                  child: Text('$aidStation in'),
+                ),
+                ElevatedButton(
+                  onPressed: stationOut,
+                  child: Text('$aidStation out'),
+                ),
+              ],
+            ),
           ],
         ),
       ),
