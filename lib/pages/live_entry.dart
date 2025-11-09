@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/widgets/app_menu_drawer.dart';
+import 'package:open_split_time_v2/widgets/two_state_toggle.dart';
 
 class LiveEntryScreen extends StatefulWidget {
   const LiveEntryScreen({super.key});
@@ -9,17 +10,23 @@ class LiveEntryScreen extends StatefulWidget {
 }
 
 class _LiveEntryScreenState extends State<LiveEntryScreen> {
+    // TODO: Use options for writing live entry data
+    bool isContinuing = true;
+    bool hasPacer = true;
+
+    // TODO: Update with real athlete data
+    String bibNumber = '';
+    String athleteName = 'Demo Athlete';
+
   @override
   Widget build(BuildContext context) {
     // Extract the arguments passed from the navigation
     final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+
+    // Access event and aidStation from args
+    // TODO: Use event and aidStation as for writing live entry data
     final event = args['event'];
     final aidStation = args['aidStation'];
-
-    String bibNumber = '';
-    String athleteName = 'Demo Athlete';
-    bool isContinuing = true;
-    bool hasPacer = false;
 
     return Scaffold(
       appBar: AppBar(
@@ -45,6 +52,34 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
               ],
             ),
             const SizedBox(height: 24),
+
+            // --- Toggles ---
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TwoStateToggle(
+                  label: "Continuing",
+                  value: isContinuing,
+                  onChanged: (val) {
+                    setState(() {
+                      isContinuing = val;
+                    });
+                  },
+                ),
+                TwoStateToggle(
+                  label: "With Pacer",
+                  value: hasPacer,
+                  onChanged: (val) {
+                    setState(() {
+                      hasPacer = val;
+                    });
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            
+            // Buttons
           ],
         ),
       ),
