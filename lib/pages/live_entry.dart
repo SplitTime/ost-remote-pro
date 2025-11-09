@@ -16,18 +16,35 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
     final event = args['event'];
     final aidStation = args['aidStation'];
 
+    String bibNumber = '';
+    String athleteName = 'Demo Athlete';
+    bool isContinuing = true;
+    bool hasPacer = false;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Live Entry'),
       ),
       endDrawer: const AppMenuDrawer(),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Event: ${event.toString()}'),
-            const SizedBox(height: 16),
-            Text('Aid Station: ${aidStation.toString()}'),
+            // --- Top: Bib number and name ---
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Bib: $bibNumber',
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  athleteName,
+                  style: const TextStyle(fontSize: 20),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
           ],
         ),
       ),
