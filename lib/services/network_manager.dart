@@ -52,8 +52,6 @@ class NetworkManager {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      print('\nParsed data: $data');  // Debug
-
       // Build a map of event name -> aid stations
       Map<String, List<String>> eventAidStations = {};
       if (data['data'] != null && data['data'] is List) {

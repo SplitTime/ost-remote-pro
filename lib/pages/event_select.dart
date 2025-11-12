@@ -50,6 +50,26 @@ class _EventSelectState extends State<EventSelect> {
     }
   }
 
+  void _navigateToLiveEntry(BuildContext context) {
+    if (_selectedEvent != null && _selectedAidStation != null) {
+      Navigator.pushNamed(
+        context,
+        '/liveEntry',
+        arguments: {
+          'event': _selectedEvent!,
+          'aidStation': _selectedAidStation!,
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select both event and aid station.'),
+        ),
+      );
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,11 +122,9 @@ class _EventSelectState extends State<EventSelect> {
                         },
                       ),
                       ElevatedButton(
-                        onPressed: () {
-                          // TODO: Navigate to the next page or perform an action
-                        },
+                        onPressed: () => _navigateToLiveEntry(context),
                         child: const Text('Begin Live Entry'),
-                      ),
+                      )
                     ],
                   ),
       ),
