@@ -25,7 +25,7 @@ class PageRouterDrawer extends StatelessWidget {
                 // TODO: Pass actual event and aid station data
                 // Use memory?
                 'event': 'Demo Event',
-                'aidStation': 'Demo Aid Station',
+                'aidStation': 'Demo Station',
               });
 
               developer.log('Navigated to Live Entry', name: 'PageRouterDrawer');
