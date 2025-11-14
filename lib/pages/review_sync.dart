@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/widgets/dropdown_menu.dart';
 import 'package:open_split_time_v2/widgets/page_router.dart';
+import 'dart:developer' as developer;
 
 class ReviewSyncPage extends StatefulWidget {
   const ReviewSyncPage({super.key});
@@ -22,6 +23,7 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
     setState(() {
       sortBy = newValue;
     });
+    developer.log('Sort by changed to $newValue');
   }
 
   @override
