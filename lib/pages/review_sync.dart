@@ -65,47 +65,61 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
                   ),
                 ],
               ),
-              Table(
-                columnWidths: const {
-                  0: FlexColumnWidth(1), // Bib #
-                  1: FlexColumnWidth(3), // Name
-                  2: FlexColumnWidth(1), // In/Out
-                  3: FlexColumnWidth(2), // Time
-                },
-                border: const TableBorder(
-                  top: BorderSide(width: 0.5, color: Colors.grey),
-                  bottom: BorderSide(width: 0.5, color: Colors.grey),
-                  horizontalInside: BorderSide(width: 0.5, color: Colors.grey),
-                ),
-                children: [
-                  TableRow(
-                    children: const [
-                      Padding(padding: EdgeInsets.all(8), child: Text('123')),
-                      Padding(padding: EdgeInsets.all(8), child: Text('Sarah')),
-                      Padding(padding: EdgeInsets.all(8), child: Text('In')),
-                      Padding(
-                          padding: EdgeInsets.all(8),
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Text('17:30:12'),
-                          )),
-                    ],
+              const SizedBox(height: 10),
+              Expanded(
+                child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Table(
+                      columnWidths: const {
+                        0: FlexColumnWidth(1), // Bib #
+                        1: FlexColumnWidth(3), // Name
+                        2: FlexColumnWidth(1), // In/Out
+                        3: FlexColumnWidth(2), // Time
+                      },
+                      border: const TableBorder(
+                        top: BorderSide(width: 0.5, color: Colors.grey),
+                        bottom: BorderSide(width: 0.5, color: Colors.grey),
+                        horizontalInside:
+                            BorderSide(width: 0.5, color: Colors.grey),
+                      ),
+                      children: [
+                        TableRow(
+                          children: const [
+                            Padding(
+                                padding: EdgeInsets.all(8), child: Text('123')),
+                            Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text('Sarah')),
+                            Padding(
+                                padding: EdgeInsets.all(8), child: Text('In')),
+                            Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text('17:30:12'),
+                                )),
+                          ],
+                        ),
+                        TableRow(
+                          children: const [
+                            Padding(
+                                padding: EdgeInsets.all(8), child: Text('456')),
+                            Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text('Janine')),
+                            Padding(
+                                padding: EdgeInsets.all(8), child: Text('Out')),
+                            Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text('12:30:45'),
+                                )),
+                          ],
+                        ),
+                      ],
+                    )
                   ),
-                  TableRow(
-                    children: const [
-                      Padding(padding: EdgeInsets.all(8), child: Text('456')),
-                      Padding(
-                          padding: EdgeInsets.all(8), child: Text('Janine')),
-                      Padding(padding: EdgeInsets.all(8), child: Text('Out')),
-                      Padding(
-                          padding: EdgeInsets.all(8),
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Text('12:30:45'),
-                          )),
-                    ],
-                  ),
-                ],
               )
             ],
           ),
