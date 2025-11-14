@@ -18,8 +18,6 @@ class NetworkManager {
       },
     );
 
-    print("login fucntion called");
-
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
