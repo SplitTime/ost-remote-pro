@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/widgets/dropdown_menu.dart';
 import 'package:open_split_time_v2/widgets/page_router.dart';
+import 'package:open_split_time_v2/widgets/review_sync_widgets/sync_export_footer.dart';
 import 'dart:developer' as developer;
 
 class ReviewSyncPage extends StatefulWidget {
@@ -24,6 +25,16 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
       sortBy = newValue;
     });
     developer.log('Sort by changed to $newValue');
+  }
+
+  void onSyncPressed() {
+    // TODO: Implement sync functionality
+    developer.log('Sync button pressed', name: 'ReviewSyncPage');
+  }
+
+  void onExportPressed() {
+    // TODO: Implement export functionality
+    developer.log('Export button pressed', name: 'ReviewSyncPage');
   }
 
   @override
@@ -124,57 +135,10 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-          height: 50,
-          child: Row(
-            children: [
-              Expanded(
-                  flex: 10,
-                  child: GestureDetector(
-                      onTap: () {
-                        // TODO: Implement sync functionality
-                        developer.log('Sync button tapped',
-                            name: 'ReviewSyncPage');
-                      },
-                      child: Container(
-                        color: Colors.green[700],
-                        child: Center(
-                            child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Sync',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                              ),
-                            ),
-                            const Icon(
-                              Icons.sync,
-                              color: Colors.white,
-                            )
-                          ],
-                        )),
-                      ))),
-              Expanded(
-                  flex: 2,
-                  child: GestureDetector(
-                    onTap: () {
-                      developer.log('Export button tapped',
-                          name: 'ReviewSyncPage');
-                    },
-                    child: Container(
-                      color: Colors.blue[300],
-                      child: const Center(
-                        child: Icon(
-                          Icons.ios_share,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ))
-            ],
-          )),
+      bottomNavigationBar: SyncExportFooter(
+        onSyncPressed: onSyncPressed,
+        onExportPressed: onExportPressed,
+      ),
     );
   }
 }
