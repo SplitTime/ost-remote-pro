@@ -39,7 +39,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
   }
 
   void stationIn() {
-    if(_bibNumberToName[bibNumber] == null) {
+    if(_bibNumberToName[int.parse(bibNumber)] == null) {
       // ignore: avoid_print
       print('Bib number not found: $bibNumber');
       return;
@@ -66,7 +66,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
   }
 
   void stationOut() {
-    if(_bibNumberToName[bibNumber] == null) {
+    if(_bibNumberToName[int.parse(bibNumber)] == null) {
       // ignore: avoid_print
       print('Bib number not found: $bibNumber');
       return;
