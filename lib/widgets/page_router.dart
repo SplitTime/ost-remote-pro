@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
 
-class AppMenuDrawer extends StatelessWidget {
-  const AppMenuDrawer({super.key});
+class PageRouterDrawer extends StatelessWidget {
+  const PageRouterDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class AppMenuDrawer extends StatelessWidget {
                 'aidStation': 'Demo Aid Station',
               });
 
-              developer.log('Navigated to Live Entry', name: 'AppMenuDrawer');
+              developer.log('Navigated to Live Entry', name: 'PageRouterDrawer');
             },
           ),
           ListTile(
