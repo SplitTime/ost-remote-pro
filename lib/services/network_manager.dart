@@ -25,6 +25,8 @@ class NetworkManager {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', data['token'] ?? '');
 
+      print(response.body); // Debug print of the full response body
+
       return data;
     } else {
       throw Exception('Login failed (${response.statusCode}): ${response.body}');
