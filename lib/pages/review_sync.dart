@@ -118,13 +118,63 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
                           ],
                         ),
                       ],
-                    )
-                  ),
-              )
+                    )),
+              ),
             ],
           ),
         ),
       ),
+      bottomNavigationBar: Container(
+          height: 50,
+          child: Row(
+            children: [
+              Expanded(
+                  flex: 10,
+                  child: GestureDetector(
+                      onTap: () {
+                        // TODO: Implement sync functionality
+                        developer.log('Sync button tapped',
+                            name: 'ReviewSyncPage');
+                      },
+                      child: Container(
+                        color: Colors.green[700],
+                        child: Center(
+                            child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Sync',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                              ),
+                            ),
+                            const Icon(
+                              Icons.sync,
+                              color: Colors.white,
+                            )
+                          ],
+                        )),
+                      ))),
+              Expanded(
+                  flex: 2,
+                  child: GestureDetector(
+                    onTap: () {
+                      developer.log('Export button tapped',
+                          name: 'ReviewSyncPage');
+                    },
+                    child: Container(
+                      color: Colors.blue[300],
+                      child: const Center(
+                        child: Icon(
+                          Icons.ios_share,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ))
+            ],
+          )),
     );
   }
 }
