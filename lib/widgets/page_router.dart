@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 
-class AppMenuDrawer extends StatelessWidget {
-  const AppMenuDrawer({super.key});
+class PageRouterDrawer extends StatelessWidget {
+  const PageRouterDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,28 +13,29 @@ class AppMenuDrawer extends StatelessWidget {
           const DrawerHeader(
             decoration: BoxDecoration(color: Colors.blue),
             child: Text(
-              'Menu',
+              'OST Remote',
               style: TextStyle(color: Colors.white, fontSize: 24),
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.home),
-            title: const Text('Home'),
+            title: const Text('Live Entry'),
             onTap: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Home clicked')),
-              );
+              Navigator.pushNamed(context, '/liveEntry', arguments: {
+                // TODO: Pass actual event and aid station data
+                // Use memory?
+                'event': 'Demo Event',
+                'aidStation': 'Demo Aid Station',
+              });
+
+              developer.log('Navigated to Live Entry', name: 'PageRouterDrawer');
             },
           ),
           ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
+            title: const Text('Review/Sync'),
             onTap: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Settings clicked')),
-              );
+              Navigator.pushNamed(context, '/ReviewSync');
             },
           ),
           // Add more menu items here
