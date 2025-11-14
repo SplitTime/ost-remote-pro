@@ -39,6 +39,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
     } catch (e) {
+      print(  'Login error: $e'); // Debug print for error
       setState(() {
         _error = 'Login failed. Please check your credentials.';
       });
