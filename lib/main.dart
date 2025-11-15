@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/pages/live_entry.dart';
 import 'package:open_split_time_v2/pages/login.dart';
+import 'package:open_split_time_v2/pages/review_sync.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,6 +21,7 @@ class MyApp extends StatelessWidget {
       home: const LoginPage(),
       routes: {
         '/liveEntry': (context) => const LiveEntryScreen(),
+        '/ReviewSync': (context) => const ReviewSyncPage(),
       },
     );
   }

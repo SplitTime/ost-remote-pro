@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:developer' as developer;
 
 class NetworkManager {
   static const _baseUrl = 'https://www.opensplittime.org/';
@@ -24,6 +25,11 @@ class NetworkManager {
       // Save token using SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', data['token'] ?? '');
+
+      developer.log(
+        'Login successful, token saved.',
+        name: 'NetworkManager.login',
+      );
 
       return data;
     } else {
