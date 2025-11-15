@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:open_split_time_v2/widgets/app_menu_drawer.dart';
-import 'package:open_split_time_v2/widgets/numpad.dart';
-import 'package:open_split_time_v2/widgets/two_state_toggle.dart';
+import 'package:open_split_time_v2/widgets/page_router.dart';
+import 'package:open_split_time_v2/widgets/live_entry_widgets/numpad.dart';
+import 'package:open_split_time_v2/widgets/live_entry_widgets/two_state_toggle.dart';
 
 class LiveEntryScreen extends StatefulWidget {
   const LiveEntryScreen({super.key});
@@ -42,7 +42,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
       appBar: AppBar(
         title: const Text('Live Entry'),
       ),
-      endDrawer: const AppMenuDrawer(),
+      endDrawer: const PageRouterDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
