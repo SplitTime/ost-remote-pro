@@ -22,10 +22,11 @@ class PageRouterDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pop(context);
               Navigator.pushNamed(context, '/liveEntry', arguments: {
-                // TODO: Pass actual event and aid station data
+                // TODO: Pass actual event and aid station data, issue #22
                 // Use memory?
                 'event': 'Demo Event',
                 'aidStation': 'Demo Station',
+                'eventSlug': 'demo-event',
               });
 
               developer.log('Navigated to Live Entry', name: 'PageRouterDrawer');
