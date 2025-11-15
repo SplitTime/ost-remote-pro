@@ -50,16 +50,29 @@ class _EventSelectState extends State<EventSelect> {
     }
   }
 
-  void _navigateToLiveEntry(BuildContext context) {
+  Future<void> _navigateToLiveEntry(BuildContext context) async {
     if (_selectedEvent != null && _selectedAidStation != null) {
-      Navigator.pushNamed(
-        context,
-        '/liveEntry',
-        arguments: {
-          'event': _selectedEvent!,
-          'aidStation': _selectedAidStation!,
-        },
-      );
+      // First get the event slug
+      final eventSlug = await _networkManager.getEventSlugByName(_selectedEvent!);
+      if (eventSlug != null) {
+        if (!mounted) return; // Safety check if widget was disposed
+        Navigator.pushNamed(
+          context,
+          '/liveEntry',
+          arguments: {
+            'event': _selectedEvent!,
+            'eventSlug': eventSlug,
+            'aidStation': _selectedAidStation!,
+          },
+        );
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not find event details.'),
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -122,7 +135,7 @@ class _EventSelectState extends State<EventSelect> {
                         },
                       ),
                       ElevatedButton(
-                        onPressed: () => _navigateToLiveEntry(context),
+                        onPressed: () async => await _navigateToLiveEntry(context),
                         child: const Text('Begin Live Entry'),
                       )
                     ],
