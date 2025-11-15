@@ -1,7 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:open_split_time_v2/widgets/app_menu_drawer.dart';
-import 'package:open_split_time_v2/widgets/numpad.dart';
-import 'package:open_split_time_v2/widgets/two_state_toggle.dart';
+import 'package:open_split_time_v2/widgets/page_router.dart';
+import 'package:open_split_time_v2/widgets/live_entry_widgets/numpad.dart';
+import 'package:open_split_time_v2/widgets/live_entry_widgets/two_state_toggle.dart';
 
 class LiveEntryScreen extends StatefulWidget {
   const LiveEntryScreen({super.key});
@@ -12,37 +13,157 @@ class LiveEntryScreen extends StatefulWidget {
 
 
 class _LiveEntryScreenState extends State<LiveEntryScreen> {
+  final NetworkManager _networkManager = NetworkManager();
+  Map<int, String> _bibNumberToName = {};
+  bool _isLoading = true;
+  String? _eventName;
+  String? _eventSlug;
+  String? _aidStation;
+
+  // We need to format the entered time to the local time zone
+  String _formatEnteredTimeLocal() {
+    final now = DateTime.now();
+    final y = now.year.toString().padLeft(4, '0');
+    final mo = now.month.toString().padLeft(2, '0');
+    final d = now.day.toString().padLeft(2, '0');
+    final hh = now.hour.toString().padLeft(2, '0');
+    final mm = now.minute.toString().padLeft(2, '0');
+    final ss = now.second.toString().padLeft(2, '0');
+    final offset = now.timeZoneOffset;
+    final sign = offset.isNegative ? '-' : '+';
+    final oh = offset.inHours.abs().toString().padLeft(2, '0');
+    final omin = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
+    final offsetStr = '$sign$oh:$omin';
+    return '$y-$mo-$d $hh:$mm:$ss$offsetStr';
+  }
+
   void stationIn() {
-    // TODO: Implement station in logic
+    if(_bibNumberToName[int.parse(bibNumber)] == null) {
+      // ignore: avoid_print
+      print('Bib number not found: $bibNumber');
+      return;
+    }
+    final entered = _formatEnteredTimeLocal();
+    final json = {
+      'data': [
+        {
+          'type': 'raw_time',
+          'attributes': {
+            'source': 'owens-laptop',
+            'sub_split_kind': 'in',
+            'with_pacer': hasPacer.toString(),
+            'entered_time': entered,
+            'split_name': _aidStation ?? '',
+            'bib_number': bibNumber,
+            'stopped_here': (!isContinuing).toString(),
+          }
+        }
+      ]
+    };
+
+    print(jsonEncode(json));
   }
 
   void stationOut() {
-    // TODO: Implement station out logic
+    if(_bibNumberToName[int.parse(bibNumber)] == null) {
+      // ignore: avoid_print
+      print('Bib number not found: $bibNumber');
+      return;
+    }
+    final entered = _formatEnteredTimeLocal();
+    final json = {
+      'data': [
+        {
+          'type': 'raw_time',
+          'attributes': {
+            'source': 'owens-laptop',
+            'sub_split_kind': 'out',
+            'with_pacer': hasPacer.toString(),
+            'entered_time': entered,
+            'split_name': _aidStation ?? '',
+            'bib_number': bibNumber,
+            'stopped_here': (!isContinuing).toString(),
+          }
+        }
+      ]
+    };
+
+    
+    print(jsonEncode(json));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // We can't access widget.parameters in initState, so we'll load data in didChangeDependencies
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadParticipants();
+  }
+
+  Future<void> _loadParticipants() async {
+    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final eventName = args['event'] as String;
+    final eventSlug = args['eventSlug'] as String;
+    final aidStationFromArgs = args['aidStation'] as String;
+
+    
+    try {
+      final participants = await _networkManager.fetchParticipantNames(eventName: eventSlug);
+      if (mounted) {
+        setState(() {
+          _bibNumberToName = participants;
+          _isLoading = false;
+          _eventName = eventName;
+          _eventSlug = eventSlug;
+          _aidStation = aidStationFromArgs;
+        });
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error loading participants: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   // TODO: Use options for writing live entry data
   bool isContinuing = true;
   bool hasPacer = true;
 
-  // TODO: Update with real athlete data
   String bibNumber = '';
-  String athleteName = 'Demo Athlete';
+  String athleteName = '';
+
+  void _updateAthleteName() {
+    if (bibNumber.isNotEmpty) {
+      try {
+        final bib = int.parse(bibNumber);
+        athleteName = _bibNumberToName[bib] ?? '';
+      } catch (e) {
+        athleteName = '';
+      }
+    } else {
+      athleteName = '';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Extract the arguments passed from the navigation
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-
-    // Access event and aidStation from args
-    // TODO: Use event and aidStation as for writing live entry data
-    final event = args['event'];
-    final aidStation = args['aidStation'];
+  // Prefer the stored aid station (set during _loadParticipants), but fall back to args
+  final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+  final aidStation = _aidStation ?? args['aidStation'] as String;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Live Entry'),
       ),
-      endDrawer: const AppMenuDrawer(),
+      endDrawer: const PageRouterDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -55,10 +176,17 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
                   'Bib: $bibNumber',
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                Text(
-                  athleteName,
-                  style: const TextStyle(fontSize: 20),
-                ),
+                if (_isLoading)
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                else
+                  Text(
+                    athleteName,
+                    style: const TextStyle(fontSize: 20),
+                  ),
               ],
             ),
             const SizedBox(height: 24),
@@ -108,16 +236,20 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
             // Numpad
             Expanded(
               child: 
-                NumPad(
+                _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : NumPad(
                   onNumberPressed: (digit) {
                     setState(() {
                       bibNumber += digit;
+                      _updateAthleteName();
                     });
                   },
                   onBackspace: () {
                     setState(() {
                       if (bibNumber.isNotEmpty) {
                         bibNumber = bibNumber.substring(0, bibNumber.length - 1);
+                        _updateAthleteName();
                       }
                     });
                   },
