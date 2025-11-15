@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/widgets/page_router.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/numpad.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/two_state_toggle.dart';
+import 'package:open_split_time_v2/services/network_manager.dart';
 
 class LiveEntryScreen extends StatefulWidget {
   const LiveEntryScreen({super.key});
