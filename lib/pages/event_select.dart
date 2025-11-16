@@ -34,12 +34,13 @@ class _EventSelectState extends State<EventSelect> {
       setState(() {
         _eventAidStations = eventAidStations;
         // Set default selected event and aid stations if available
-        if (_eventAidStations.isNotEmpty) {
-          _selectedEvent = _eventAidStations.keys.first;
-          _selectedAidStation = _eventAidStations[_selectedEvent!]!.isNotEmpty
-              ? _eventAidStations[_selectedEvent!]!.first
-              : null;
-        }
+        // if (_eventAidStations.isNotEmpty) {
+        //   _selectedEvent = _eventAidStations.keys.first;
+        //   _selectedAidStation = _eventAidStations[_selectedEvent!]!.isNotEmpty
+        //       ? _eventAidStations[_selectedEvent!]!.first
+        //       : null;
+        // }
+        // Unsure if this is needed, doesn't seem like it is but still unsure.
         _isLoading = false;
       });
     } catch (e) {
