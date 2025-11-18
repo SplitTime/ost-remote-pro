@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:open_split_time_v2/widgets/dropdown_menu.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
 import 'package:open_split_time_v2/services/preferences_service.dart';
@@ -37,14 +38,6 @@ class _EventSelectState extends State<EventSelect> {
       final eventAidStations = await _networkManager.fetchEventDetails();
       setState(() {
         _eventAidStations = eventAidStations;
-        // Set default selected event and aid stations if available
-        // if (_eventAidStations.isNotEmpty) {
-        //   _selectedEvent = _eventAidStations.keys.first;
-        //   _selectedAidStation = _eventAidStations[_selectedEvent!]!.isNotEmpty
-        //       ? _eventAidStations[_selectedEvent!]!.first
-        //       : null;
-        // }
-        // Unsure if this is needed, doesn't seem like it is but still unsure.
         _isLoading = false;
       });
     } catch (e) {
@@ -59,6 +52,14 @@ class _EventSelectState extends State<EventSelect> {
     if (_selectedEvent != null && _selectedAidStation != null) {
       // First get the event slug
       final eventSlug = await _networkManager.getEventSlugByName(_selectedEvent!);
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('selectedEventSlug', eventSlug ?? '');
+        await prefs.setString('selectedAidStation', _selectedAidStation!);
+        await prefs.setString('selectedEvent', _selectedEvent!);
+      } catch (e) {
+        print("$e"); // Basic debug, consider better handling later.
+      }
       if (eventSlug != null) {
         // Save selections to preferences
         prefs.selectedEvent = _selectedEvent!;

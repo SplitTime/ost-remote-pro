@@ -5,7 +5,7 @@ import 'dart:developer' as developer;
 import 'package:open_split_time_v2/services/preferences_service.dart';
 
 class NetworkManager {
-  static const _baseUrl = 'https://www.opensplittime.org/';
+  static const _baseUrl = 'https://ost-stage.herokuapp.com/';
   final PreferencesService _prefs = PreferencesService();
 
   Future<Map<String, dynamic>> login(String email, String password) async {
