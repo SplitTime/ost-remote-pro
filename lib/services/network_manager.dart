@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer' as developer;
 
 class NetworkManager {
-  static const _baseUrl = 'https://www.opensplittime.org/';
+  static const _baseUrl = 'https://ost-stage.herokuapp.com/';
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(

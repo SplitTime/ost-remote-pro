@@ -134,7 +134,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
     }
   }
 
-  // TODO: Use options for writing live entry data
+  // Use options for writing live entry data
   bool isContinuing = true;
   bool hasPacer = true;
 
