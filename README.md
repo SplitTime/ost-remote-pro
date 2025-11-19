@@ -4,12 +4,13 @@ This guide explains how to set up Flutter on your machine and run OST-pro locall
 
 ## 1. Install Flutter
 
-Before running OST-pro, Flutter SDK is required.
+Before running OST-pro, Flutter SDK is required. Ensure you have the latest version of Flutter installed on your system loaclly.
 
 ### Step-by-step summary:
-1. Download Flutter SDK for your operating system. It is recommended to use VS Code to setup Flutter as it is the recommended method of using Flutter in the official documentation. 
+1. Download Flutter SDK for your operating system.
+It is recommended to use VS Code to setup Flutter as it is the recommended method of using Flutter in the official documentation. Follow this [link](https://docs.flutter.dev/install/with-vs-code) for the installation.
 2. Add flutter to your system PATH.
-3. Run `flutter doctor` to verify setup.
+Quick Hack: Close all terminals of VS code and relaunch to apply the installation. On relaunching, run `flutter`, the result will be all the available commands with flutter.
 
 ### Detailed Flutter Installation Guide:
 
@@ -50,6 +51,10 @@ Follow the prompt and Flutter will compile the app and deploy it to the selected
 
 You should now be ready to develop and run this ost-remote-pro locally.
 
+## Expected errors
+1. Make sure to have all the pending/unavailable dependencies shown on running `flutter doctor` to be satisfied.
+2. If you see errors associated to developer settings on running `flutter run`, make sure to turn on the developer mode in the settings or run `start ms-settings:developers` to get redirected to the settings window.
+
 ## Project file & object overview
 
 - `pubspec.yaml` — Project metadata, dependencies, assets, and Flutter configuration.
@@ -88,5 +93,3 @@ Tips
 - Run `flutter analyze` to check static issues and linting.
 - Keep widgets small and place shared logic in `services/` or `repositories/` for testability.
 - Add or update `test/` files to cover new or changed behavior.
-
-If you want, provide the actual repository listing and I’ll generate a precise file-by-file description.
