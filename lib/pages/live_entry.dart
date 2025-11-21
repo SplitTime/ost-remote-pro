@@ -140,17 +140,27 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
 
   String bibNumber = '';
   String athleteName = '';
+  String athleteOrigin = '';
+  String atheleteGender = '';
+  String atheleteAge = '';
 
-  void _updateAthleteName() {
+  void _updateAthleteInfo() {
     if (bibNumber.isNotEmpty) {
       try {
         final bib = int.parse(bibNumber);
         athleteName = _bibNumberToName[bib] ?? '';
+        // TODO: Fetch additional athlete info (age, gender, origin) from network manager
+        atheleteAge = '(100)';
+        atheleteGender = 'Female';
+        athleteOrigin = 'Somewhere, ST';
       } catch (e) {
         athleteName = '';
       }
     } else {
       athleteName = '';
+      athleteOrigin = '';
+      atheleteGender = '';
+      atheleteAge = '';
     }
   }
 
@@ -203,24 +213,37 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
                       ],
                     )),
                 Expanded(
-                  flex: 2,
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(
-                            athleteName,
-                            style: const TextStyle(fontSize: 20),
-                          ),
-                  ),
-                ),
+                    flex: 2,
+                    child: SizedBox(
+                        height: 100,
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                children: [
+                                  _isLoading
+                                      ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2),
+                                        )
+                                      : Text(
+                                          athleteName,
+                                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                        ),
+                                  Text(
+                                    athleteOrigin,
+                                    style: const TextStyle(
+                                        fontSize: 16, color: Colors.blue),
+                                  )
+                                ],
+                              ),
+                              Text('$atheleteGender$atheleteAge', style: const TextStyle(fontSize: 16)),
+                            ]))),
               ],
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 10),
 
             // --- Toggles ---
             Row(
@@ -246,7 +269,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 10),
 
             // Buttons
             Row(
@@ -263,7 +286,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
               ],
             ),
 
-            const SizedBox(height: 100),
+            const SizedBox(height: 70),
             // Numpad
             Expanded(
                 child: _isLoading
@@ -272,7 +295,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
                         onNumberPressed: (digit) {
                           setState(() {
                             bibNumber += digit;
-                            _updateAthleteName();
+                            _updateAthleteInfo();
                           });
                         },
                         onBackspace: () {
@@ -280,7 +303,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
                             if (bibNumber.isNotEmpty) {
                               bibNumber =
                                   bibNumber.substring(0, bibNumber.length - 1);
-                              _updateAthleteName();
+                              _updateAthleteInfo();
                             }
                           });
                         },
