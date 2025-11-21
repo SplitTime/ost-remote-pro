@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:open_split_time_v2/widgets/live_entry_widgets/clock.dart';
 import 'package:open_split_time_v2/widgets/page_router.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/numpad.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/two_state_toggle.dart';
@@ -11,7 +12,6 @@ class LiveEntryScreen extends StatefulWidget {
   @override
   State<LiveEntryScreen> createState() => _LiveEntryScreenState();
 }
-
 
 class _LiveEntryScreenState extends State<LiveEntryScreen> {
   final NetworkManager _networkManager = NetworkManager();
@@ -39,7 +39,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
   }
 
   void stationIn() {
-    if(_bibNumberToName[int.parse(bibNumber)] == null) {
+    if (_bibNumberToName[int.parse(bibNumber)] == null) {
       // ignore: avoid_print
       print('Bib number not found: $bibNumber');
       return;
@@ -66,7 +66,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
   }
 
   void stationOut() {
-    if(_bibNumberToName[int.parse(bibNumber)] == null) {
+    if (_bibNumberToName[int.parse(bibNumber)] == null) {
       // ignore: avoid_print
       print('Bib number not found: $bibNumber');
       return;
@@ -89,7 +89,6 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
       ]
     };
 
-    
     print(jsonEncode(json));
   }
 
@@ -106,14 +105,15 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
   }
 
   Future<void> _loadParticipants() async {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final eventName = args['event'] as String;
     final eventSlug = args['eventSlug'] as String;
     final aidStationFromArgs = args['aidStation'] as String;
 
-    
     try {
-      final participants = await _networkManager.fetchParticipantNames(eventName: eventSlug);
+      final participants =
+          await _networkManager.fetchParticipantNames(eventName: eventSlug);
       if (mounted) {
         setState(() {
           _bibNumberToName = participants;
@@ -156,9 +156,10 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
-  // Prefer the stored aid station (set during _loadParticipants), but fall back to args
-  final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-  final aidStation = _aidStation ?? args['aidStation'] as String;
+    // Prefer the stored aid station (set during _loadParticipants), but fall back to args
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final aidStation = _aidStation ?? args['aidStation'] as String;
 
     return Scaffold(
       appBar: AppBar(
@@ -166,31 +167,60 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
       ),
       endDrawer: const PageRouterDrawer(),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           children: [
             // --- Top: Bib number and name ---
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Bib: $bibNumber',
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                if (_isLoading)
-                  const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                else
-                  Text(
-                    athleteName,
-                    style: const TextStyle(fontSize: 20),
+                Expanded(
+                    flex: 1,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          bibNumber,
+                          style: const TextStyle(
+                              fontSize: 40, fontWeight: FontWeight.w900),
+                        ),
+                        Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 5),
+                            child: Container(
+                              height: 20,
+                              color: Colors.lightBlue,
+                              child: const Center(
+                                child: Text(
+                                  'Time of day',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            )),
+                        Center(child: ClockWidget()),
+                      ],
+                    )),
+                Expanded(
+                  flex: 2,
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(
+                            athleteName,
+                            style: const TextStyle(fontSize: 20),
+                          ),
                   ),
+                ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 5),
 
             // --- Toggles ---
             Row(
@@ -217,7 +247,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
               ],
             ),
             const SizedBox(height: 24),
-            
+
             // Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -236,26 +266,25 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
             const SizedBox(height: 100),
             // Numpad
             Expanded(
-              child: 
-                _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : NumPad(
-                  onNumberPressed: (digit) {
-                    setState(() {
-                      bibNumber += digit;
-                      _updateAthleteName();
-                    });
-                  },
-                  onBackspace: () {
-                    setState(() {
-                      if (bibNumber.isNotEmpty) {
-                        bibNumber = bibNumber.substring(0, bibNumber.length - 1);
-                        _updateAthleteName();
-                      }
-                    });
-                  },
-                ) 
-              )
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : NumPad(
+                        onNumberPressed: (digit) {
+                          setState(() {
+                            bibNumber += digit;
+                            _updateAthleteName();
+                          });
+                        },
+                        onBackspace: () {
+                          setState(() {
+                            if (bibNumber.isNotEmpty) {
+                              bibNumber =
+                                  bibNumber.substring(0, bibNumber.length - 1);
+                              _updateAthleteName();
+                            }
+                          });
+                        },
+                      ))
           ],
         ),
       ),
