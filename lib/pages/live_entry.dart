@@ -248,14 +248,59 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
                                               fontWeight: FontWeight.bold),
                                         ),
                                   _isStationPressed
+                                      // TODO: Refractor this to a function widget
                                       ? Container(
                                           // Green Box when 'IN' is pressed
                                           height:
-                                              20, // Set a height for visibility
-                                          width:
-                                              100, // Set a width for visibility
+                                              35, // Set a height for visibility
+                                          width: 200,
                                           color: Colors.green,
-                                        )
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                flex: 5,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(Icons.task,
+                                                        color: Colors.white),
+                                                    Text(bibNumber,
+                                                        style: const TextStyle(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color:
+                                                                Colors.white)),
+                                                  ],
+                                                ),
+                                              ),
+                                              Expanded(
+                                                  flex: 6,
+                                                  child: Container(
+                                                    color: Colors.tealAccent,
+                                                    child: Column(
+                                                      children: [
+                                                        const Text(
+                                                            //TODO: Replace with actual entered time
+                                                            'HH:MM:SS',
+                                                            style: TextStyle(
+                                                              fontSize: 15,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            )),
+                                                        const Text(
+                                                            'TAP TO EDIT',
+                                                            style: TextStyle(
+                                                              fontSize: 6,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ))
+                                                      ],
+                                                    ),
+                                                  )),
+                                            ],
+                                          ))
                                       : Text(
                                           // Original Text when 'IN' is NOT pressed
                                           athleteOrigin,
