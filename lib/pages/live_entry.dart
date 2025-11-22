@@ -64,10 +64,6 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
       ]
     };
 
-    setState(() {
-      _isStationPressed = true;
-    });
-
     print(jsonEncode(json));
   }
 
@@ -94,11 +90,6 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
         }
       ]
     };
-
-    setState(() {
-      _isStationPressed = true;
-    });
-
     print(jsonEncode(json));
   }
 
@@ -347,11 +338,23 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  onPressed: stationIn,
+                  onPressed: () {
+                    setState(() {
+                      stationIn();
+                      _isStationPressed = true;
+                      bibNumber = '';
+                    });
+                  },
                   child: Text('$aidStation in'),
                 ),
                 ElevatedButton(
-                  onPressed: stationOut,
+                  onPressed: () {
+                    setState(() {
+                      stationOut();
+                      _isStationPressed = true;
+                      bibNumber = '';
+                    });
+                  },
                   child: Text('$aidStation out'),
                 ),
               ],
@@ -367,6 +370,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
                           setState(() {
                             bibNumber += digit;
                             _updateAthleteInfo();
+                            _isStationPressed = false;
                           });
                         },
                         onBackspace: () {
@@ -375,6 +379,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
                               bibNumber =
                                   bibNumber.substring(0, bibNumber.length - 1);
                               _updateAthleteInfo();
+                              _isStationPressed = false;
                             }
                           });
                         },
