@@ -21,6 +21,8 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
   String? _eventSlug;
   String? _aidStation;
 
+  bool _isStationPressed = false;
+
   // We need to format the entered time to the local time zone
   String _formatEnteredTimeLocal() {
     final now = DateTime.now();
@@ -62,6 +64,10 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
       ]
     };
 
+    setState(() {
+      _isStationPressed = true;
+    });
+
     print(jsonEncode(json));
   }
 
@@ -88,6 +94,10 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
         }
       ]
     };
+
+    setState(() {
+      _isStationPressed = true;
+    });
 
     print(jsonEncode(json));
   }
@@ -162,6 +172,9 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
       atheleteGender = '';
       atheleteAge = '';
     }
+    setState(() {
+      _isStationPressed = false;
+    });
   }
 
   @override
@@ -230,20 +243,33 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
                                         )
                                       : Text(
                                           athleteName,
-                                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                          style: const TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold),
                                         ),
-                                  Text(
-                                    athleteOrigin,
-                                    style: const TextStyle(
-                                        fontSize: 16, color: Colors.blue),
-                                  )
+                                  _isStationPressed
+                                      ? Container(
+                                          // Green Box when 'IN' is pressed
+                                          height:
+                                              20, // Set a height for visibility
+                                          width:
+                                              100, // Set a width for visibility
+                                          color: Colors.green,
+                                        )
+                                      : Text(
+                                          // Original Text when 'IN' is NOT pressed
+                                          athleteOrigin,
+                                          style: const TextStyle(
+                                              fontSize: 16, color: Colors.blue),
+                                        ),
                                 ],
                               ),
-                              Text('$atheleteGender$atheleteAge', style: const TextStyle(fontSize: 16)),
+                              Text('$atheleteGender$atheleteAge',
+                                  style: const TextStyle(fontSize: 16)),
                             ]))),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 15),
 
             // --- Toggles ---
             Row(
@@ -286,7 +312,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
               ],
             ),
 
-            const SizedBox(height: 70),
+            const SizedBox(height: 50),
             // Numpad
             Expanded(
                 child: _isLoading
