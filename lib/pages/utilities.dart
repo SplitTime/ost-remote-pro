@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/pages/login.dart';
-import 'package:open_split_time_v2/pages/event_select.dart';
-import 'package:open_split_time_v2/pages/review_sync.dart';
 import 'package:open_split_time_v2/pages/about_screen.dart';
-
+import 'package:open_split_time_v2/pages/refresh_loading.dart';
+import 'package:open_split_time_v2/pages/change_station_screen.dart';
 
 class UtilitiesPage extends StatelessWidget {
   const UtilitiesPage({super.key});
@@ -59,7 +58,7 @@ class UtilitiesPage extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const ReviewSyncPage()),
+                    MaterialPageRoute(builder: (context) => const RefreshLoadingScreen()),
                   );
                 },
                 child: const Text(
@@ -85,10 +84,13 @@ class UtilitiesPage extends StatelessWidget {
                 ),
                 onPressed: () {
                   Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const EventSelect()),
-                  );
-                },
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChangeStationScreen(),
+                  ),
+                );
+              },
+
                 child: const Text(
                   "Change Station",
                   style: TextStyle(

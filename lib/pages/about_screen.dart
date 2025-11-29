@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:open_split_time_v2/pages/live_entry.dart';
-
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
@@ -32,7 +30,7 @@ class AboutScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF007AFF),
+                color: Color.fromARGB(255, 88, 157, 231),
               ),
             ),
 
