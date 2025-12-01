@@ -58,4 +58,14 @@ class PreferencesService {
       _prefs.setString('email', value);
     }
   }
+
+  // raw_times storage
+  String? get rawTimes => _prefs.getString('raw_times');
+  set rawTimes(String? value) {
+    if (value == null) {
+      _prefs.remove('raw_times');
+    } else {
+      _prefs.setString('raw_times', value);
+    }
+  }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Utils
 import 'dart:developer' as developer;
@@ -174,6 +176,22 @@ class LiveEntryController extends ChangeNotifier {
     // Log the JSON being sent
     developer.log('Submitting time entry: $json', name: 'LiveEntryScreen');
 
-    // TODO: Record the data in the backend, wait for networkManager to send the data
+    // Record the data in the backend, wait for networkManager to send the data
+    appendEntry(json);
+  }
+
+  void appendEntry(newEntryJson) async {
+    // Get SharedPreferences instance
+    final prefs = await SharedPreferences.getInstance();
+
+    // Get existing list OR create a new empty list
+    final storedJson = prefs.getString('raw_times');
+    List<dynamic> list = storedJson != null ? jsonDecode(storedJson) : [];
+
+    // Add the new entry
+    list.add(newEntryJson);
+
+    // Save updated list
+    await prefs.setString('raw_times', jsonEncode(list));
   }
 }
