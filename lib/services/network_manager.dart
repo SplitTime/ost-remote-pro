@@ -161,5 +161,33 @@ class NetworkManager {
     }
   }
 
+  syncEntries(String eventSlug, Future<Map<String, dynamic>> entriesPayload) async {
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('No authentication token found');
+    }
+
+    final payload = await entriesPayload;
+
+    final response = await http.post(
+      Uri.parse('$_baseUrl/api/v1/event_groups/$eventSlug/import'),
+      headers: {
+        'Authorization': token,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode(payload),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      developer.log(
+        'Entries synced successfully.',
+        name: 'NetworkManager.syncEntries',
+      );
+    } else {
+      throw Exception('Failed to sync entries (${response.statusCode}): ${response.body}');
+    }
+  }
+
   
 }

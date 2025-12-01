@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 class ReviewSyncDataTable extends StatefulWidget {
   final String sortBy;
-  const ReviewSyncDataTable({super.key, required this.sortBy});
+  final List<Map<String, dynamic>>? data;
+  const ReviewSyncDataTable({super.key, required this.sortBy, this.data});
 
   @override
   State<ReviewSyncDataTable> createState() => _ReviewSyncDataTableState();
@@ -14,7 +15,7 @@ class _ReviewSyncDataTableState extends State<ReviewSyncDataTable> {
   @override
   void initState() {
     super.initState();
-    _data = _fetchData();
+    _data = widget.data != null ? List<Map<String, dynamic>>.from(widget.data!) : _fetchData();
     _sortData();
   }
 
@@ -24,6 +25,11 @@ class _ReviewSyncDataTableState extends State<ReviewSyncDataTable> {
     if (oldWidget.sortBy != widget.sortBy) {
       _sortData();
       setState(() {}); // trigger rebuild
+    }
+    if (oldWidget.data != widget.data && widget.data != null) {
+      _data = List<Map<String, dynamic>>.from(widget.data!);
+      _sortData();
+      setState(() {});
     }
   }
 
@@ -54,9 +60,25 @@ class _ReviewSyncDataTableState extends State<ReviewSyncDataTable> {
     ];
   }
 
+  String _mapSortKey(String sortBy) {
+    switch (sortBy) {
+      case 'Bib #':
+      case 'Bib':
+      case 'Bib #':
+        return 'Bib #';
+      case 'Time Displayed':
+      case 'Time Entered':
+      case 'Time':
+        return 'Time';
+      case 'Name':
+      default:
+        return 'Name';
+    }
+  }
+
   void _sortData() {
-    _data.sort((a, b) =>
-        a[widget.sortBy].toString().compareTo(b[widget.sortBy].toString()));
+    final key = _mapSortKey(widget.sortBy);
+    _data.sort((a, b) => a[key].toString().compareTo(b[key].toString()));
   }
 
   @override

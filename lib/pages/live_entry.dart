@@ -4,6 +4,7 @@ import 'package:open_split_time_v2/widgets/page_router.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/numpad.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/two_state_toggle.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LiveEntryScreen extends StatefulWidget {
   const LiveEntryScreen({super.key});
@@ -38,7 +39,22 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
     return '$y-$mo-$d $hh:$mm:$ss$offsetStr';
   }
 
-  void stationIn() {
+  void appendEntry(newEntryJson) async {
+    // Get SharedPreferences instance
+    final prefs = await SharedPreferences.getInstance();
+
+    // Get existing list OR create a new empty list
+    final storedJson = prefs.getString('raw_times');
+    List<dynamic> list = storedJson != null ? jsonDecode(storedJson) : [];
+
+    // Add the new entry
+    list.add(newEntryJson);
+
+    // Save updated list
+    await prefs.setString('raw_times', jsonEncode(list));
+  }
+
+  void stationIn() async {
     if(_bibNumberToName[int.parse(bibNumber)] == null) {
       // ignore: avoid_print
       print('Bib number not found: $bibNumber');
@@ -46,23 +62,18 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
     }
     final entered = _formatEnteredTimeLocal();
     final json = {
-      'data': [
-        {
-          'type': 'raw_time',
-          'attributes': {
-            'source': 'owens-laptop',
-            'sub_split_kind': 'in',
-            'with_pacer': hasPacer.toString(),
-            'entered_time': entered,
-            'split_name': _aidStation ?? '',
-            'bib_number': bibNumber,
-            'stopped_here': (!isContinuing).toString(),
-          }
-        }
-      ]
+      'type': 'raw_time',
+      'attributes': {
+        'source': 'owens-laptop',
+        'sub_split_kind': 'in',
+        'with_pacer': hasPacer.toString(),
+        'entered_time': entered,
+        'split_name': _aidStation ?? '',
+        'bib_number': bibNumber,
+        'stopped_here': (!isContinuing).toString(),
+      }
     };
-
-    print(jsonEncode(json));
+    appendEntry(json);
   }
 
   void stationOut() {
@@ -73,24 +84,18 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
     }
     final entered = _formatEnteredTimeLocal();
     final json = {
-      'data': [
-        {
-          'type': 'raw_time',
-          'attributes': {
-            'source': 'owens-laptop',
-            'sub_split_kind': 'out',
-            'with_pacer': hasPacer.toString(),
-            'entered_time': entered,
-            'split_name': _aidStation ?? '',
-            'bib_number': bibNumber,
-            'stopped_here': (!isContinuing).toString(),
-          }
-        }
-      ]
+      'type': 'raw_time',
+      'attributes': {
+        'source': 'owens-laptop',
+        'sub_split_kind': 'out',
+        'with_pacer': hasPacer.toString(),
+        'entered_time': entered,
+        'split_name': _aidStation ?? '',
+        'bib_number': bibNumber,
+        'stopped_here': (!isContinuing).toString(),
+      }
     };
-
-    
-    print(jsonEncode(json));
+    appendEntry(json);
   }
 
   @override
