@@ -6,6 +6,8 @@ import 'package:open_split_time_v2/widgets/live_entry_widgets/numpad.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/two_state_toggle.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
 
+import 'package:open_split_time_v2/widgets/live_entry_widgets/edit_bottom_sheet.dart';
+
 class LiveEntryScreen extends StatefulWidget {
   const LiveEntryScreen({super.key});
 
@@ -22,6 +24,35 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
   String? _aidStation;
 
   bool _isStationPressed = false;
+
+  String _lastBib = '';
+  String _lastAthleteName = '';
+  DateTime? _lastEntryTime;
+
+  void _showEditSheet() {
+
+    // Format date and time separately
+    final dateStr =
+        "${_lastEntryTime!.year}-${_lastEntryTime!.month.toString().padLeft(2, '0')}-${_lastEntryTime!.day.toString().padLeft(2, '0')}";
+    final timeStr =
+        "${_lastEntryTime!.hour.toString().padLeft(2, '0')}:${_lastEntryTime!.minute.toString().padLeft(2, '0')}:${_lastEntryTime!.second.toString().padLeft(2, '0')}";
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allows sheet to grow if needed
+      builder: (context) {
+        return EditEntryBottomSheet(
+          eventName: _eventName ?? 'Event',
+          bibNumber: _lastBib,
+          athleteName: _lastAthleteName,
+          date: dateStr,
+          time: timeStr,
+          isContinuing: isContinuing, // Assuming current toggle state, or store last state if needed
+          hasPacer: hasPacer,
+        );
+      },
+    );
+  }
 
   // We need to format the entered time to the local time zone
   String _formatEnteredTimeLocal() {
@@ -41,6 +72,9 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
   }
 
   void stationIn() {
+    _lastEntryTime = DateTime.now();
+    _lastBib = bibNumber;
+    _lastAthleteName = athleteName;
     if (_bibNumberToName[int.parse(bibNumber)] == null) {
       // ignore: avoid_print
       print('Bib number not found: $bibNumber');
@@ -68,6 +102,9 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
   }
 
   void stationOut() {
+    _lastEntryTime = DateTime.now();
+    _lastBib = bibNumber;
+    _lastAthleteName = athleteName;
     if (_bibNumberToName[int.parse(bibNumber)] == null) {
       // ignore: avoid_print
       print('Bib number not found: $bibNumber');
@@ -90,7 +127,6 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
         }
       ]
     };
-    print(jsonEncode(json));
   }
 
   @override
@@ -188,121 +224,111 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // ... Left Column (Bib display) ...
                 Expanded(
-                    flex: 1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          bibNumber,
+                  flex: 1,
+                  child: Column(
+                    children: [
+                      Text(bibNumber,
                           style: const TextStyle(
-                              fontSize: 40, fontWeight: FontWeight.w900),
-                        ),
-                        Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 5),
-                            child: Container(
-                              height: 20,
-                              color: Colors.lightBlue,
-                              child: const Center(
-                                child: Text(
-                                  'Time of day',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                            )),
-                        Center(child: ClockWidget()),
-                      ],
-                    )),
+                              fontSize: 40, fontWeight: FontWeight.w900)),
+                      // ... Time of day ...
+                      Center(child: ClockWidget()),
+                    ],
+                  ),
+                ),
+                // ... Right Column (Name / Green Box) ...
                 Expanded(
-                    flex: 2,
-                    child: SizedBox(
-                        height: 100,
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                children: [
-                                  _isLoading
-                                      ? const SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                              strokeWidth: 2),
-                                        )
-                                      : Text(
-                                          athleteName,
-                                          style: const TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                  _isStationPressed
-                                      // TODO: Refractor this to a function widget
-                                      ? Container(
-                                          // Green Box when 'IN' is pressed
-                                          height:
-                                              35, // Set a height for visibility
-                                          width: 200,
-                                          color: Colors.green,
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                flex: 5,
-                                                child: Row(
+                  flex: 2,
+                  child: SizedBox(
+                    height: 100,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          children: [
+                            _isLoading
+                                ? const CircularProgressIndicator()
+                                : Text(athleteName,
+                                    style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold)),
+
+                            // --- MODIFIED GREEN BOX SECTION ---
+                            _isStationPressed
+                                ? Material(
+                                    // Use Material here for the background color
+                                    color: Colors.green,
+                                    child: InkWell(
+                                      onTap: _showEditSheet,
+                                      child: SizedBox(
+                                        // Use SizedBox or Container (without color)
+                                        height: 35,
+                                        width: 200,
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              flex: 5,
+                                              child: Row(
+                                                children: [
+                                                  const Icon(Icons.task,
+                                                      color: Colors.white),
+                                                  Text(_lastBib,
+                                                      style: const TextStyle(
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.white)),
+                                                ],
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 6,
+                                              child: Container(
+                                                color: Colors.tealAccent,
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
                                                   children: [
-                                                    const Icon(Icons.task,
-                                                        color: Colors.white),
-                                                    Text(bibNumber,
-                                                        style: const TextStyle(
-                                                            fontSize: 15,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color:
-                                                                Colors.white)),
+                                                    Text(
+                                                      _lastEntryTime != null
+                                                          ? "${_lastEntryTime!.hour.toString().padLeft(2, '0')}:${_lastEntryTime!.minute.toString().padLeft(2, '0')}:${_lastEntryTime!.second.toString().padLeft(2, '0')}"
+                                                          : "00:00:00",
+                                                      style: const TextStyle(
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    const Text(
+                                                      'TAP TO EDIT',
+                                                      style: TextStyle(
+                                                          fontSize: 8,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    )
                                                   ],
                                                 ),
                                               ),
-                                              Expanded(
-                                                  flex: 6,
-                                                  child: Container(
-                                                    color: Colors.tealAccent,
-                                                    child: Column(
-                                                      children: [
-                                                        const Text(
-                                                            //TODO: Replace with actual entered time
-                                                            'HH:MM:SS',
-                                                            style: TextStyle(
-                                                              fontSize: 15,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            )),
-                                                        const Text(
-                                                            'TAP TO EDIT',
-                                                            style: TextStyle(
-                                                              fontSize: 6,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ))
-                                                      ],
-                                                    ),
-                                                  )),
-                                            ],
-                                          ))
-                                      : Text(
-                                          // Original Text when 'IN' is NOT pressed
-                                          athleteOrigin,
-                                          style: const TextStyle(
-                                              fontSize: 16, color: Colors.blue),
+                                            ),
+                                          ],
                                         ),
-                                ],
-                              ),
-                              Text('$atheleteGender$atheleteAge',
-                                  style: const TextStyle(fontSize: 16)),
-                            ]))),
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    athleteOrigin,
+                                    style: const TextStyle(
+                                        fontSize: 16, color: Colors.blue),
+                                  ),
+                            // ----------------------------------
+                          ],
+                        ),
+                        Text('$atheleteGender$atheleteAge',
+                            style: const TextStyle(fontSize: 16)),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 15),
