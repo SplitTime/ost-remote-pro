@@ -84,36 +84,73 @@ class NetworkManager {
       throw Exception('No authentication token found');
     }
     
-    final response = await http.get(
-      Uri.parse('${_baseUrl}api/v1/events?filter[editable]=true'),
-      headers: {
-        'Authorization': token,
-        'Accept': 'application/json',
-      },
-    );
+    try {
+      final response = await http.get(
+        Uri.parse('${_baseUrl}api/v1/event_groups?filter[editable]=true&filter[availableLive]=true'),
+        headers: {
+          'Authorization': token,
+          'Accept': 'application/json',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      // Build a map of event name -> aid stations
-      Map<String, List<String>> eventAidStations = {};
-      if (data['data'] != null && data['data'] is List) {
-        for (var event in data['data']) {
-          if (event['attributes'] != null && event['attributes']['name'] != null) {
-            final eventName = event['attributes']['name'].toString();
-            final splits = event['attributes']['splitNames'];
-            if (splits != null && splits is List) {
-              eventAidStations[eventName] = List<String>.from(splits);
-            } else {
-              eventAidStations[eventName] = [];
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        // Build a map of event name -> aid stations
+        final Map<String, List<String>> eventAidStations = {};
+        
+        if (data['data'] != null && data['data'] is List) {
+          for (var eventGroup in data['data']) {
+            if (eventGroup['attributes'] != null && 
+                eventGroup['attributes']['name'] != null) {
+              
+              final eventName = eventGroup['attributes']['name'].toString();
+              eventAidStations[eventName] = []; // Initialize with empty list by default
+              
+              // Check if we have events in relationships
+              if (eventGroup['relationships'] != null && 
+                  eventGroup['relationships']['events'] != null &&
+                  eventGroup['relationships']['events']['data'] is List) {
+                
+                final events = eventGroup['relationships']['events']['data'];
+                
+                for (var event in events) {
+                  try {
+                    if (event['id'] != null) {
+                      final eventId = event['id'].toString();
+                      final eventResponse = await http.get(
+                        Uri.parse('${_baseUrl}api/v1/events/$eventId'),
+                        headers: {
+                          'Authorization': token,
+                          'Accept': 'application/json',
+                        },
+                      );
+                      
+                      if (eventResponse.statusCode == 200) {
+                        final eventData = jsonDecode(eventResponse.body);
+                        if (eventData['data']?['attributes']?['splitNames'] is List) {
+                          eventAidStations[eventName] = 
+                            List<String>.from(eventData['data']['attributes']['splitNames']);
+                          break; // Use the first valid event's aid stations
+                        }
+                      }
+                    }
+                  } catch (e) {
+                    print('Error processing event: $e');
+                    continue;
+                  }
+                }
+              }
             }
           }
         }
+        return eventAidStations;
+      } else if (response.statusCode == 401) {
+        throw Exception('Authentication failed. Please try logging in again.');
+      } else {
+        throw Exception('Failed to load events (${response.statusCode}): ${response.body}');
       }
-      return eventAidStations;
-    } else if (response.statusCode == 401) {
-      throw Exception('\nAuthentication failed. Please try logging in again.');
-    } else {
-      throw Exception('\nFailed to load events (${response.statusCode}): ${response.body}');
+    } catch (e) {
+      throw Exception('Error in fetchEventDetails: $e');
     }
   }
 

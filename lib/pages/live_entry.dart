@@ -73,7 +73,8 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
         'stopped_here': (!isContinuing).toString(),
       }
     };
-    appendEntry(json);
+    print(json);
+    //appendEntry(json);
   }
 
   void stationOut() {
