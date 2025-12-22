@@ -115,12 +115,11 @@ class _EventSelectState extends State<EventSelect> {
                       CustomDropDownMenu(
                         items: _eventAidStations.keys.toList(),
                         hint: 'Select Event',
-                        onChanged: (value) {
+                        value: _selectedEvent,
+                        onChanged: (newValue) {
                           setState(() {
-                            _selectedEvent = value;
-                            // Reset aid station selection when event changes
-                            final stations = _eventAidStations[_selectedEvent!] ?? [];
-                            _selectedAidStation = stations.isNotEmpty ? stations.first : null;
+                            _selectedEvent = newValue;
+                            _selectedAidStation = null; // Reset aid station when event changes
                           });
                         },
                       ),
@@ -130,9 +129,10 @@ class _EventSelectState extends State<EventSelect> {
                             ? _eventAidStations[_selectedEvent!] ?? []
                             : [],
                         hint: 'Select Aid Station',
-                        onChanged: (value) {
+                        value: _selectedAidStation,
+                        onChanged: (newValue) {
                           setState(() {
-                            _selectedAidStation = value;
+                            _selectedAidStation = newValue;
                           });
                         },
                       ),

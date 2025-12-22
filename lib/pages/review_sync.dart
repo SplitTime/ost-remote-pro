@@ -133,7 +133,7 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
                   CustomDropDownMenu(
                     items: sortByItems,
                     hint: "Sort By",
-                    initialValue: sortBy,
+                    value: sortBy,
                     onChanged: _onSortByChanged,
                   ),
                 ],

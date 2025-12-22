@@ -44,7 +44,7 @@ class NetworkManager {
     }
     try {
       final response = await http.get(
-        Uri.parse('${_baseUrl}api/v1/events?filter[editable]=true&filter[name]=$name'),
+        Uri.parse('${_baseUrl}api/v1/event_groups?filter[name]=$name'),
         headers: {
           'Authorization': token,
           'Accept': 'application/json',
@@ -52,15 +52,9 @@ class NetworkManager {
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        if (data['data'] != null && data['data'] is List) {
-          for (var event in data['data']) {
-            if (event['attributes'] != null && event['attributes']['name'] != null) {
-              final eventName = event['attributes']['name'].toString();
-              if (eventName == name) {
-                return event['attributes']['slug'].toString();
-              }
-            }
-          }
+        if (data['data'] != null) {
+          print(data['data'][0]['attributes']['slug']);
+          return data['data'][0]['attributes']['slug'];
         }
       } else if (response.statusCode == 401) {
         throw Exception('\nAuthentication failed. Please try logging in again.');
