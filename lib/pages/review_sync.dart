@@ -18,6 +18,9 @@ class ReviewSyncPage extends StatefulWidget {
 class _ReviewSyncPageState extends State<ReviewSyncPage> {
   final NetworkManager _networkManager = NetworkManager();
   String? sortBy = "Name"; // Default sort by Name
+  late SharedPreferences prefs;
+  String? _eventSlug;
+
   final List<String> sortByItems = [
     "Name",
     "Time Displayed",
@@ -29,9 +32,28 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
   List<Map<String, dynamic>> _localEntries = [];
   Map<int, Map<String, String>> _bibToName = {};
 
+  @override
+  void initState() {
+    super.initState();
+    _initPrefs();
+  }
+
+  Future<void> _initPrefs() async {
+    prefs = await SharedPreferences.getInstance();
+    _eventSlug = prefs.getString('selectedEventSlug');
+    if (mounted) {
+      setState(() {});
+      await _loadLocalEntries();
+    }
+  }
+
   Future<void> _loadLocalEntries() async {
-    final prefs = await SharedPreferences.getInstance();
-    final storedJson = prefs.getString('raw_times');
+    if (_eventSlug == null) {
+      if (mounted) setState(() => _localEntries = []);
+      return;
+    }
+    
+    final storedJson = prefs.getString('${_eventSlug}_raw_times');
     if (storedJson == null || storedJson.isEmpty) {
       if (mounted) setState(() => _localEntries = []);
       return;
@@ -49,14 +71,11 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
     }
     // Also attempt to load participant names for the selected event (to show names)
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final eventSlug = prefs.getString('selectedEventSlug') ?? '';
-      if (eventSlug.isNotEmpty) {
-        final participants = await _networkManager.fetchParticipantNames(eventName: eventSlug);
+      if (_eventSlug != null && _eventSlug!.isNotEmpty) {
+        final participants = await _networkManager.fetchParticipantNames(eventName: _eventSlug!);
         if (mounted) setState(() => _bibToName = participants);
       }
     } catch (e) {
-      // if fetching participants fails, keep entries but leave names empty
       if (mounted) setState(() => _bibToName = {});
     }
   }
@@ -69,8 +88,8 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
   }
 
   Future<Map<String, dynamic>> buildBatchPayload() async {
-    final prefs = await SharedPreferences.getInstance();
-    final storedJson = prefs.getString('raw_times');
+    if (_eventSlug == null) return {};
+    final storedJson = prefs.getString('${_eventSlug}_raw_times');
 
     if (storedJson == null) {
       return {};
@@ -87,16 +106,14 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
 
   void onSyncPressed() async {
     // Build payload and read selected event slug from prefs
-    final prefs = await SharedPreferences.getInstance();
-    final eventSlug = prefs.getString('selectedEventSlug') ?? '';
-    if (eventSlug.isEmpty) {
+    if (_eventSlug == null || _eventSlug!.isEmpty) {
       developer.log('No event slug selected; cannot sync', name: 'ReviewSyncPage');
       return;
     }
 
-    final entriesToSync = buildBatchPayload();
     try {
-      await _networkManager.syncEntries(eventSlug, entriesToSync);
+      final entriesToSync = buildBatchPayload();
+      await _networkManager.syncEntries(_eventSlug!, entriesToSync);
       developer.log('Sync button pressed', name: 'ReviewSyncPage');
     } catch (e) {
       developer.log('Sync failed: $e', name: 'ReviewSyncPage');
@@ -108,11 +125,6 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
     developer.log('Export button pressed', name: 'ReviewSyncPage');
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _loadLocalEntries();
-  }
 
   @override
   Widget build(BuildContext context) {
