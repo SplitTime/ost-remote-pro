@@ -44,14 +44,14 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
     final prefs = await SharedPreferences.getInstance();
 
     // Get existing list OR create a new empty list
-    final storedJson = prefs.getString('raw_times');
+    final storedJson = prefs.getString('${_eventSlug}_raw_times');
     List<dynamic> list = storedJson != null ? jsonDecode(storedJson) : [];
 
     // Add the new entry
     list.add(newEntryJson);
 
     // Save updated list
-    await prefs.setString('raw_times', jsonEncode(list));
+    await prefs.setString('${_eventSlug}_raw_times', jsonEncode(list));
   }
 
   void stationIn() async {
@@ -74,7 +74,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
       }
     };
     print(json);
-    //appendEntry(json);
+    await appendEntry(json);
   }
 
   void stationOut() {
@@ -96,7 +96,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
         'stopped_here': (!isContinuing).toString(),
       }
     };
-    appendEntry(json);
+    await appendEntry(json);
   }
 
   @override
