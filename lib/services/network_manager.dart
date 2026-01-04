@@ -53,7 +53,6 @@ class NetworkManager {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['data'] != null) {
-          print(data['data'][0]['attributes']['slug']);
           return data['data'][0]['attributes']['slug'];
         }
       } else if (response.statusCode == 401) {
@@ -192,16 +191,19 @@ class NetworkManager {
     }
   }
 
-  syncEntries(String eventSlug, Future<Map<String, dynamic>> entriesPayload) async {
+  Future<bool> syncEntries(String eventSlug, Map<String, dynamic> entriesPayload) async {
     final token = await getToken();
     if (token == null) {
       throw Exception('No authentication token found');
+      return false;
     }
 
-    final payload = await entriesPayload;
+    final payload = entriesPayload;
+    print('Payload to sync:');
+    print(jsonEncode(payload));
 
     final response = await http.post(
-      Uri.parse('$_baseUrl/api/v1/event_groups/$eventSlug/import'),
+      Uri.parse('$_baseUrl/api/v1/event_groups/$eventSlug/import?data_format=jsonapi_batch'),
       headers: {
         'Authorization': token,
         'Content-Type': 'application/json',
@@ -215,8 +217,10 @@ class NetworkManager {
         'Entries synced successfully.',
         name: 'NetworkManager.syncEntries',
       );
+      return true;
     } else {
       throw Exception('Failed to sync entries (${response.statusCode}): ${response.body}');
+      return false;
     }
   }
 

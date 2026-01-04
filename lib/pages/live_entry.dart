@@ -39,7 +39,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
     return '$y-$mo-$d $hh:$mm:$ss$offsetStr';
   }
 
-  void appendEntry(newEntryJson) async {
+  Future<void> appendEntry(newEntryJson) async {
     // Get SharedPreferences instance
     final prefs = await SharedPreferences.getInstance();
 
@@ -71,13 +71,16 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
         'split_name': _aidStation ?? '',
         'bib_number': bibNumber,
         'stopped_here': (!isContinuing).toString(),
+      },
+      'meta': {
+        'synced': false
       }
     };
     print(json);
     await appendEntry(json);
   }
 
-  void stationOut() {
+  void stationOut() async {
     if(_bibNumberToName[int.parse(bibNumber)] == null) {
       // ignore: avoid_print
       print('Bib number not found: $bibNumber');
