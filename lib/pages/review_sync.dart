@@ -17,9 +17,12 @@ class ReviewSyncPage extends StatefulWidget {
 
 class _ReviewSyncPageState extends State<ReviewSyncPage> {
   final NetworkManager _networkManager = NetworkManager();
-  String? sortBy = "Name"; // Default sort by Name
   late SharedPreferences prefs;
+  String? sortBy = "Name"; // Default sort by Name
   String? _eventSlug;
+  List<Map<String, dynamic>> _tableRows = [];
+  
+  
 
   final List<String> sortByItems = [
     "Name",
@@ -87,36 +90,127 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
     developer.log('Sort by changed to $newValue');
   }
 
-  Future<Map<String, dynamic>> buildBatchPayload() async {
-    if (_eventSlug == null) return {};
-    final storedJson = prefs.getString('${_eventSlug}_raw_times');
+ 
 
-    if (storedJson == null) {
-      return {};
+  Future<Map<String, dynamic>> buildBatchPayload(List entriesToProcess) async {
+    for (final entry in entriesToProcess) {
+      // Add logic to strip the meta field and any other unnecessary fields
+      entry.remove('meta');
     }
-
-    final List<dynamic> entries = jsonDecode(storedJson);
-
     return {
-      "data": entries,
-      "data_format": "jsonapi_batch",
-      "limited_response": "true"
+      "data": entriesToProcess,
     };
   }
 
+  Future<void> _updateLocalEntries() async {
+    if (_eventSlug == null) return;
+    
+    try {
+      final storedJson = prefs.getString('${_eventSlug}_raw_times');
+      if (storedJson == null || storedJson.isEmpty) return;
+
+      final List<dynamic> entries = json.decode(storedJson);
+      bool updated = false;
+
+      // Mark all entries as synced
+      for (var entry in entries) {
+        if (entry is Map && entry['meta']?['synced'] != true) {
+          entry['meta'] = {'synced': true};
+          updated = true;
+        }
+      }
+
+      if (updated) {
+        await prefs.setString('${_eventSlug}_raw_times', json.encode(entries));
+        if (mounted) {
+          await _loadLocalEntries(); // Refresh the UI
+        }
+      }
+    } catch (e) {
+      developer.log('Error updating local entries: $e', name: 'ReviewSyncPage');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating local entries: $e')),
+        );
+      }
+    }
+  }
+
   void onSyncPressed() async {
-    // Build payload and read selected event slug from prefs
     if (_eventSlug == null || _eventSlug!.isEmpty) {
       developer.log('No event slug selected; cannot sync', name: 'ReviewSyncPage');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No event selected!')),
+        );
+      }
       return;
     }
 
     try {
-      final entriesToSync = buildBatchPayload();
-      await _networkManager.syncEntries(_eventSlug!, entriesToSync);
-      developer.log('Sync button pressed', name: 'ReviewSyncPage');
+      final storedJson = prefs.getString('${_eventSlug}_raw_times');
+      final List<dynamic> entriesToProcess = [];
+      
+      if (storedJson == null || storedJson.isEmpty) {
+        developer.log('No local data to sync', name: 'ReviewSyncPage');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No data to sync!')),
+          );
+        }
+        return;
+      }
+
+      // Parse and filter entries
+      final List<dynamic> allEntries = json.decode(storedJson);
+      for (var entry in allEntries) {
+        if (entry is Map && entry['meta']?['synced'] != true) {
+          entriesToProcess.add(Map<String, dynamic>.from(entry)); // Create a copy
+        }
+      }
+
+      if (entriesToProcess.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No new entries to sync!')),
+          );
+        }
+        return;
+      }
+
+      // Show loading indicator
+      final scaffold = ScaffoldMessenger.of(context);
+      scaffold.showSnackBar(
+        const SnackBar(content: Text('Syncing entries...'), duration: Duration(seconds: 5)),
+      );
+
+      // Process the sync
+      final entriesToSync = await buildBatchPayload(entriesToProcess);
+      print('Entries to sync: ${entriesToSync.length}');
+      print(jsonEncode(entriesToSync));
+      final success = await _networkManager.syncEntries(_eventSlug!, entriesToSync);
+      
+      developer.log('Sync completed, success: $success', name: 'ReviewSyncPage');
+      
+      if (success && mounted) {
+        await _updateLocalEntries();
+        scaffold.hideCurrentSnackBar();
+        scaffold.showSnackBar(
+          SnackBar(content: Text('Successfully synced ${entriesToProcess.length} entries!')),
+        );
+      } else if (mounted) {
+        scaffold.hideCurrentSnackBar();
+        scaffold.showSnackBar(
+          const SnackBar(content: Text('Sync failed. Please try again.')),
+        );
+      }
     } catch (e) {
       developer.log('Sync failed: $e', name: 'ReviewSyncPage');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error during sync: ${e.toString()}')),
+        );
+      }
     }
   }
 
@@ -168,10 +262,11 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
               const SizedBox(height: 10),
               // Build rows for the data table from local queued entries
               Builder(builder: (context) {
-                final tableRows = _localEntries.map((item) {
+                _tableRows = _localEntries.map((item) {
                   final attrs = (item['attributes'] is Map) ? Map<String, dynamic>.from(item['attributes']) : <String, dynamic>{};
                   final bibStr = attrs['bib_number']?.toString() ?? '';
-                  final bib = int.tryParse(bibStr) ?? -1;
+                  final bib = int.tryParse(bibStr ?? '') ?? -1;
+                  final synced = attrs['synced'] == true;
                   final name = (bib != -1 && _bibToName.containsKey(bib))
                       ? _bibToName[bib]!['fullName']
                       : (attrs['fullName']?.toString() ?? '');
@@ -180,11 +275,10 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
                     'Name': name ?? '',
                     'In/Out': attrs['sub_split_kind']?.toString() ?? '',
                     'Time': attrs['entered_time']?.toString() ?? '',
-                    'Synced': attrs['synced'] == true,
+                    'Synced': synced,
                   };
                 }).toList();
-
-                return ReviewSyncDataTable(sortBy: sortBy!, data: tableRows);
+                return ReviewSyncDataTable(sortBy: sortBy!, data: _tableRows);
               }),
             ],
           ),
