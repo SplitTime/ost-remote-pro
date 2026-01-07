@@ -5,8 +5,11 @@ import 'package:open_split_time_v2/widgets/page_router.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/numpad.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/two_state_toggle.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
+import 'package:open_split_time_v2/widgets/live_entry_widgets/station_status_display.dart';
 
 import 'package:open_split_time_v2/widgets/live_entry_widgets/edit_bottom_sheet.dart';
+
+import 'dart:developer' as developer;
 
 class LiveEntryScreen extends StatefulWidget {
   const LiveEntryScreen({super.key});
@@ -30,7 +33,6 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
   DateTime? _lastEntryTime;
 
   void _showEditSheet() {
-
     // Format date and time separately
     final dateStr =
         "${_lastEntryTime!.year}-${_lastEntryTime!.month.toString().padLeft(2, '0')}-${_lastEntryTime!.day.toString().padLeft(2, '0')}";
@@ -98,7 +100,8 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
       ]
     };
 
-    print(jsonEncode(json));
+    developer.log('Station In JSON: ${jsonEncode(json)}',
+        name: 'LiveEntryScreen');
   }
 
   void stationOut() {
@@ -255,72 +258,13 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
                                         fontWeight: FontWeight.bold)),
 
                             // --- MODIFIED GREEN BOX SECTION ---
-                            _isStationPressed
-                                ? Material(
-                                    // Use Material here for the background color
-                                    color: Colors.green,
-                                    child: InkWell(
-                                      onTap: _showEditSheet,
-                                      child: SizedBox(
-                                        // Use SizedBox or Container (without color)
-                                        height: 35,
-                                        width: 200,
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              flex: 5,
-                                              child: Row(
-                                                children: [
-                                                  const Icon(Icons.task,
-                                                      color: Colors.white),
-                                                  Text(_lastBib,
-                                                      style: const TextStyle(
-                                                          fontSize: 15,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.white)),
-                                                ],
-                                              ),
-                                            ),
-                                            Expanded(
-                                              flex: 6,
-                                              child: Container(
-                                                color: Colors.tealAccent,
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Text(
-                                                      _lastEntryTime != null
-                                                          ? "${_lastEntryTime!.hour.toString().padLeft(2, '0')}:${_lastEntryTime!.minute.toString().padLeft(2, '0')}:${_lastEntryTime!.second.toString().padLeft(2, '0')}"
-                                                          : "00:00:00",
-                                                      style: const TextStyle(
-                                                          fontSize: 15,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    const Text(
-                                                      'TAP TO EDIT',
-                                                      style: TextStyle(
-                                                          fontSize: 8,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                : Text(
-                                    athleteOrigin,
-                                    style: const TextStyle(
-                                        fontSize: 16, color: Colors.blue),
-                                  ),
-                            // ----------------------------------
+                            StationStatusDisplay(
+                              isStationPressed: _isStationPressed,
+                              atheleteOrigin: athleteOrigin,
+                              showEditSheet: _showEditSheet,
+                              lastBib: _lastBib,
+                              lastEntryTime: _lastEntryTime,
+                            ),
                           ],
                         ),
                         Text('$atheleteGender$atheleteAge',
