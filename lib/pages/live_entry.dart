@@ -1,14 +1,19 @@
+// live_entry.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
+
+// Widgets
 import 'package:open_split_time_v2/widgets/live_entry_widgets/clock.dart';
 import 'package:open_split_time_v2/widgets/page_router.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/numpad.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/two_state_toggle.dart';
-import 'package:open_split_time_v2/services/network_manager.dart';
-import 'package:open_split_time_v2/widgets/live_entry_widgets/station_status_display.dart';
 
+import 'package:open_split_time_v2/widgets/live_entry_widgets/station_status_display.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/edit_bottom_sheet.dart';
 
+// Utils
+import 'package:open_split_time_v2/utils/time_utils.dart';
+import 'package:open_split_time_v2/services/network_manager.dart';
 import 'dart:developer' as developer;
 
 class LiveEntryScreen extends StatefulWidget {
@@ -56,23 +61,6 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
     );
   }
 
-  // We need to format the entered time to the local time zone
-  String _formatEnteredTimeLocal() {
-    final now = DateTime.now();
-    final y = now.year.toString().padLeft(4, '0');
-    final mo = now.month.toString().padLeft(2, '0');
-    final d = now.day.toString().padLeft(2, '0');
-    final hh = now.hour.toString().padLeft(2, '0');
-    final mm = now.minute.toString().padLeft(2, '0');
-    final ss = now.second.toString().padLeft(2, '0');
-    final offset = now.timeZoneOffset;
-    final sign = offset.isNegative ? '-' : '+';
-    final oh = offset.inHours.abs().toString().padLeft(2, '0');
-    final omin = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
-    final offsetStr = '$sign$oh:$omin';
-    return '$y-$mo-$d $hh:$mm:$ss$offsetStr';
-  }
-
   void stationIn() {
     _lastEntryTime = DateTime.now();
     _lastBib = bibNumber;
@@ -82,7 +70,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
       print('Bib number not found: $bibNumber');
       return;
     }
-    final entered = _formatEnteredTimeLocal();
+    final entered = TimeUtils.formatEnteredTimeLocal();
     final json = {
       'data': [
         {
@@ -113,7 +101,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
       print('Bib number not found: $bibNumber');
       return;
     }
-    final entered = _formatEnteredTimeLocal();
+    final entered = TimeUtils.formatEnteredTimeLocal();
     final json = {
       'data': [
         {
