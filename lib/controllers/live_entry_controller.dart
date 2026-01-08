@@ -7,7 +7,7 @@ import 'package:open_split_time_v2/utils/time_utils.dart';
 
 class LiveEntryController extends ChangeNotifier {
   // States for the live entry screen
-  final NetworkManager _networkManager = NetworkManager();
+  final NetworkManager _networkManager;
   Map<int, String> _bibNumberToName = {};
 
   DateTime? _entryTime;
@@ -28,6 +28,9 @@ class LiveEntryController extends ChangeNotifier {
   String _eventName = '';
   String _eventSlug = '';
 
+  // Constructor, if needed, can accept a NetworkManager for easier testing
+  LiveEntryController({NetworkManager? networkManager})
+      : _networkManager = networkManager ?? NetworkManager();
 
   // Methods to update states
   void updateBibNumber(String bibNumber) {
@@ -47,7 +50,7 @@ class LiveEntryController extends ChangeNotifier {
 
   void updateAthleteGender(String gender) {
     _athleteGender = gender;
-    notifyListeners(); 
+    notifyListeners();
   }
 
   void updateAthleteAge(String age) {
@@ -80,8 +83,6 @@ class LiveEntryController extends ChangeNotifier {
     notifyListeners();
   }
 
-
-
   // Getters
   String get bibNumber => _bibNumber;
   String get athleteName => _athleteName;
@@ -95,11 +96,11 @@ class LiveEntryController extends ChangeNotifier {
   String get athleteGender => _athleteGender;
   String get athleteAge => _athleteAge;
 
-
   // load participants
   Future<void> loadParticipants() async {
     try {
-      final participants = await _networkManager.fetchParticipantNames(eventName: eventSlug);
+      final participants =
+          await _networkManager.fetchParticipantNames(eventName: eventSlug);
       _bibNumberToName = participants;
       notifyListeners();
     } catch (e) {
@@ -107,7 +108,6 @@ class LiveEntryController extends ChangeNotifier {
           name: 'LiveEntryController');
     }
   }
-
 
   // update athlete info based on bib number
   void updateAthleteInfo() {
@@ -126,7 +126,6 @@ class LiveEntryController extends ChangeNotifier {
       updateAthleteName('');
     }
   }
-
 
   // Method to handle station control logic
   void stationControl(String inOut, String source) {
