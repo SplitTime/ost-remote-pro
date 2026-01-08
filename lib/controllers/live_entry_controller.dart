@@ -31,8 +31,7 @@ class LiveEntryController extends ChangeNotifier {
 
   // Constructor, if needed, can accept a NetworkManager for easier testing
   LiveEntryController({NetworkManager? networkManager})
-      : _networkManager = networkManager ?? NetworkManager() {
-  }
+      : _networkManager = networkManager ?? NetworkManager();
 
   // Methods to update states
   void updateBibNumber(String bibNumber) {
