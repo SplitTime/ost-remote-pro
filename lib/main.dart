@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/pages/live_entry.dart';
 import 'package:open_split_time_v2/pages/login.dart';
 import 'package:open_split_time_v2/pages/review_sync.dart';
+import 'package:open_split_time_v2/services/preferences_service.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await PreferencesService().init();
   runApp(const MyApp());
 }
 

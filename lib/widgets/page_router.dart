@@ -21,13 +21,7 @@ class PageRouterDrawer extends StatelessWidget {
             title: const Text('Live Entry'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/liveEntry', arguments: {
-                // TODO: Pass actual event and aid station data, issue #22
-                // Use memory?
-                'event': 'Demo Event',
-                'aidStation': 'Demo Station',
-                'eventSlug': 'demo-event',
-              });
+              Navigator.pushNamed(context, '/liveEntry');
 
               developer.log('Navigated to Live Entry', name: 'PageRouterDrawer');
             },

@@ -13,6 +13,9 @@ import 'package:open_split_time_v2/widgets/live_entry_widgets/edit_bottom_sheet.
 // Controller
 import 'package:open_split_time_v2/controllers/live_entry_controller.dart';
 
+// Services
+import 'package:open_split_time_v2/services/preferences_service.dart';
+
 class LiveEntryScreen extends StatefulWidget {
   const LiveEntryScreen({super.key});
 
@@ -22,6 +25,7 @@ class LiveEntryScreen extends StatefulWidget {
 
 class _LiveEntryScreenState extends State<LiveEntryScreen> {
   final LiveEntryController _controller = LiveEntryController();
+  final PreferencesService _prefs = PreferencesService();
 
   bool _isStationPressed = false;
   bool _isLoading = true;
@@ -64,11 +68,9 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
   }
 
   Future<void> _loadParticipants() async {
-    final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    _controller.updateAidStation(args['aidStation'] as String);
-    _controller.updateEventName(args['event'] as String);
-    _controller.updateEventSlug(args['eventSlug'] as String);
+    _controller.updateAidStation(_prefs.selectedAidStation);
+    _controller.updateEventName(_prefs.selectedEvent);
+    _controller.updateEventSlug(_prefs.selectedEventSlug);
 
     _controller.loadParticipants().then((_) {
       if (mounted) {

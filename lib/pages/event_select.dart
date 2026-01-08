@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/widgets/dropdown_menu.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
+import 'package:open_split_time_v2/services/preferences_service.dart';
 
 class EventSelect extends StatefulWidget {
   const EventSelect({super.key});
@@ -10,6 +11,7 @@ class EventSelect extends StatefulWidget {
 }
 
 class _EventSelectState extends State<EventSelect> {
+  final PreferencesService prefs = PreferencesService();
   final NetworkManager _networkManager = NetworkManager();
   Map<String, List<String>> _eventAidStations = {};
   String? _selectedEvent;
@@ -20,6 +22,8 @@ class _EventSelectState extends State<EventSelect> {
   @override
   void initState() {
     super.initState();
+    _selectedEvent = prefs.selectedEvent;
+    _selectedAidStation = prefs.selectedAidStation;
     _loadEventDetails();
   }
 
@@ -55,15 +59,14 @@ class _EventSelectState extends State<EventSelect> {
       // First get the event slug
       final eventSlug = await _networkManager.getEventSlugByName(_selectedEvent!);
       if (eventSlug != null) {
+        // Save selections to preferences
+        prefs.selectedEvent = _selectedEvent!;
+        prefs.selectedAidStation = _selectedAidStation!;
+
         if (!mounted) return; // Safety check if widget was disposed
         Navigator.pushNamed(
           context,
           '/liveEntry',
-          arguments: {
-            'event': _selectedEvent!,
-            'eventSlug': eventSlug,
-            'aidStation': _selectedAidStation!,
-          },
         );
       } else {
         if (!mounted) return;
