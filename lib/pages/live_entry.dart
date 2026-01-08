@@ -142,7 +142,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
                           ],
                         ),
                         Text(
-                            '${_controller.athleteGender}, ${_controller.athleteAge}',
+                            '${_controller.athleteGender}  ${_controller.athleteAge}',
                             style: const TextStyle(fontSize: 16)),
                       ],
                     ),
