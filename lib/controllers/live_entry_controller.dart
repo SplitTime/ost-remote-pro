@@ -9,7 +9,7 @@ class LiveEntryController extends ChangeNotifier {
   // States for the live entry screen
   final NetworkManager _networkManager;
 
-  Map<int, String> _bibNumberToName = {};
+  Map<int, Map<String, String>> _bibNumberToAtheleteInfo = {};
 
   DateTime? _entryTime;
 
@@ -102,7 +102,7 @@ class LiveEntryController extends ChangeNotifier {
     try {
       final participants =
           await _networkManager.fetchParticipantNames(eventName: eventSlug);
-      _bibNumberToName = participants;
+      _bibNumberToAtheleteInfo = participants;
       notifyListeners();
     } catch (e) {
       developer.log('Error loading participants: $e',
@@ -115,16 +115,24 @@ class LiveEntryController extends ChangeNotifier {
     if (_bibNumber.isNotEmpty) {
       try {
         final bib = int.parse(_bibNumber);
-        updateAthleteName(_bibNumberToName[bib] ?? '');
-        // TODO: Fetch and update other athlete info like origin, gender, age
-        updateAthleteAge('100');
-        updateAthleteGender('Male');
-        updateAthleteOrigin('Somewhere, ST');
+        updateAthleteName(_bibNumberToAtheleteInfo[bib]?['fullName'] ?? '');
+        updateAthleteAge(_bibNumberToAtheleteInfo[bib]?['age'] ?? '');
+        updateAthleteGender(_bibNumberToAtheleteInfo[bib]?['gender'] ?? '');
+        final city = _bibNumberToAtheleteInfo[bib]?['city'] ?? '';
+        final state = _bibNumberToAtheleteInfo[bib]?['stateCode'] ?? '';
+        final origin = '$city${city.isNotEmpty && state.isNotEmpty ? ', ' : ''}$state'.trim();
+        updateAthleteOrigin(origin);
       } catch (e) {
         updateAthleteName('');
+        updateAthleteAge('');
+        updateAthleteGender('');
+        updateAthleteOrigin('');
       }
     } else {
       updateAthleteName('');
+      updateAthleteAge('');
+      updateAthleteGender('');
+      updateAthleteOrigin('');
     }
   }
 
@@ -140,7 +148,7 @@ class LiveEntryController extends ChangeNotifier {
     _entryTime = DateTime.now();
 
     // if bibNumber is not found in _bibNumberToName, log and return
-    if (_bibNumberToName[int.parse(_bibNumber)] == null) {
+    if (_bibNumberToAtheleteInfo[int.parse(_bibNumber)] == null) {
       developer.log('Bib number not found: $_bibNumber',
           name: 'LiveEntryController');
       return;
