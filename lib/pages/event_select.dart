@@ -116,6 +116,7 @@ class _EventSelectState extends State<EventSelect> {
                       CustomDropDownMenu(
                         items: _eventAidStations.keys.toList(),
                         hint: 'Select Event',
+                        initialValue: _selectedEvent,
                         onChanged: (value) {
                           setState(() {
                             _selectedEvent = value;
@@ -131,12 +132,14 @@ class _EventSelectState extends State<EventSelect> {
                             ? _eventAidStations[_selectedEvent!] ?? []
                             : [],
                         hint: 'Select Aid Station',
+                        initialValue: _selectedAidStation,
                         onChanged: (value) {
                           setState(() {
                             _selectedAidStation = value;
                           });
                         },
                       ),
+                      const SizedBox(height: 32),
                       ElevatedButton(
                         onPressed: () async => await _navigateToLiveEntry(context),
                         child: const Text('Begin Live Entry'),

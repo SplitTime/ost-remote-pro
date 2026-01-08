@@ -21,9 +21,18 @@ class PageRouterDrawer extends StatelessWidget {
             title: const Text('Live Entry'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/liveEntry');
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/eventSelect', // The route name for your EventSelect widget
+                (route) => false, // This predicate returns false, destroying all previous history
+              );
+              Navigator.pushNamed(
+                context,
+                '/liveEntry',
+              );
 
-              developer.log('Navigated to Live Entry', name: 'PageRouterDrawer');
+              developer.log('Navigated to Live Entry',
+                  name: 'PageRouterDrawer');
             },
           ),
           ListTile(

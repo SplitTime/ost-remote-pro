@@ -22,4 +22,40 @@ class PreferencesService {
   // Event Slug
   String get selectedEventSlug => _prefs.getString('selected_event_slug_key') ?? '';
   set selectedEventSlug(String value) => _prefs.setString('selected_event_slug_key', value);
+
+  // Login Token
+  String? get token => _prefs.getString('token');
+  set token(String? value) {
+    if (value == null) {
+      _prefs.remove('token');
+    } else {
+      _prefs.setString('token', value);
+    }
+  }
+
+  // Token Expiration
+  DateTime? get tokenExpiration {
+    final timestamp = _prefs.getInt('token_expiration');
+    if (timestamp != null) {
+      return DateTime.fromMillisecondsSinceEpoch(timestamp);
+    }
+    return null;
+  }
+  set tokenExpiration(DateTime? value) {
+    if (value == null) {
+      _prefs.remove('token_expiration');
+    } else {
+      _prefs.setInt('token_expiration', value.millisecondsSinceEpoch);
+    }
+  }
+
+  // Email
+  String? get email => _prefs.getString('email');
+  set email(String? value) {
+    if (value == null) {
+      _prefs.remove('email');
+    } else {
+      _prefs.setString('email', value);
+    }
+  }
 }

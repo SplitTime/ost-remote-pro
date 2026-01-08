@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer' as developer;
+
+import 'package:open_split_time_v2/services/preferences_service.dart';
 
 class NetworkManager {
   static const _baseUrl = 'https://www.opensplittime.org/';
+  final PreferencesService _prefs = PreferencesService();
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
@@ -22,9 +24,11 @@ class NetworkManager {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
-      // Save token using SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', data['token'] ?? '');
+      // Save token using PreferencesService
+      _prefs.token = data['token'];
+      _prefs.tokenExpiration = DateTime.parse(data['expiration']);
+      _prefs.email = email;
+
 
       developer.log(
         'Login successful, token saved.',
@@ -74,8 +78,7 @@ class NetworkManager {
   }
 
   Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token');
+    return _prefs.token;
   }
 
   Future<Map<String, List<String>>> fetchEventDetails() async {
@@ -160,6 +163,4 @@ class NetworkManager {
       return {};
     }
   }
-
-  
 }

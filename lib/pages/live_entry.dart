@@ -47,8 +47,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
           athleteName: _controller.athleteName,
           date: dateStr,
           time: timeStr,
-          isContinuing: _controller
-              .isContinuing, // Assuming current toggle state, or store last state if needed
+          isContinuing: _controller.isContinuing, // Assuming current toggle state, or store last state if needed
           hasPacer: _controller.hasPacer,
         );
       },
@@ -108,6 +107,12 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
                   flex: 1,
                   child: Column(
                     children: [
+                      _controller.bibNumber.isEmpty
+                          ? const Text('000',
+                              style: TextStyle(
+                                  fontSize: 40, fontWeight: FontWeight.w900, color: Color.fromARGB(255, 223, 221, 221)),
+                            )
+                          :
                       Text(_controller.bibNumber,
                           style: const TextStyle(
                               fontSize: 40, fontWeight: FontWeight.w900)),
