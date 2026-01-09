@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:open_split_time_v2/widgets/dropdown_menu.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
 import 'package:open_split_time_v2/services/preferences_service.dart';
+
+import 'dart:developer' as developer;
 
 class EventSelect extends StatefulWidget {
   const EventSelect({super.key});
@@ -12,7 +13,7 @@ class EventSelect extends StatefulWidget {
 }
 
 class _EventSelectState extends State<EventSelect> {
-  final PreferencesService prefs = PreferencesService();
+  final PreferencesService _prefs = PreferencesService();
   final NetworkManager _networkManager = NetworkManager();
   Map<String, List<String>> _eventAidStations = {};
   String? _selectedEvent;
@@ -23,8 +24,19 @@ class _EventSelectState extends State<EventSelect> {
   @override
   void initState() {
     super.initState();
-    _selectedEvent = prefs.selectedEvent;
-    _selectedAidStation = prefs.selectedAidStation;
+    _selectedEvent = _prefs.selectedEvent;
+    _selectedAidStation = _prefs.selectedAidStation;
+    if (_selectedAidStation == '') {
+      _selectedAidStation = null;
+    }
+    if (_selectedEvent == '') {
+      _selectedEvent = null;
+    }
+
+    developer.log(
+      'Loaded selected event: $_selectedEvent, aid station: $_selectedAidStation',
+      name: 'EventSelect.initState',
+    );
     _loadEventDetails();
   }
 
@@ -53,17 +65,20 @@ class _EventSelectState extends State<EventSelect> {
       // First get the event slug
       final eventSlug = await _networkManager.getEventSlugByName(_selectedEvent!);
       try {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('selectedEventSlug', eventSlug ?? '');
-        await prefs.setString('selectedAidStation', _selectedAidStation!);
-        await prefs.setString('selectedEvent', _selectedEvent!);
+        _prefs.selectedEventSlug = eventSlug ?? '';
+        _prefs.selectedEvent = _selectedEvent!;
+        _prefs.selectedAidStation = _selectedAidStation!;
+        developer.log(  
+          '${_prefs.selectedEventSlug}, ${_prefs.selectedEvent}, ${_prefs.selectedAidStation}',
+          name: 'EventSelect._navigateToLiveEntry',
+        );
       } catch (e) {
         print("$e"); // Basic debug, consider better handling later.
       }
       if (eventSlug != null) {
         // Save selections to preferences
-        prefs.selectedEvent = _selectedEvent!;
-        prefs.selectedAidStation = _selectedAidStation!;
+        _prefs.selectedEvent = _selectedEvent!;
+        _prefs.selectedAidStation = _selectedAidStation!;
 
         if (!mounted) return; // Safety check if widget was disposed
         Navigator.pushNamed(

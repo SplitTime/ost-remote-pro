@@ -6,6 +6,7 @@ import 'package:open_split_time_v2/widgets/review_sync_widgets/sync_export_foote
 import 'package:open_split_time_v2/widgets/review_sync_widgets/review_sync_data_table.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:open_split_time_v2/services/preferences_service.dart';
 import 'dart:developer' as developer;
 
 class ReviewSyncPage extends StatefulWidget {
@@ -18,11 +19,11 @@ class ReviewSyncPage extends StatefulWidget {
 class _ReviewSyncPageState extends State<ReviewSyncPage> {
   final NetworkManager _networkManager = NetworkManager();
   late SharedPreferences prefs;
+  // TODO: Use PreferencesService instead of direct SharedPreferences access
+  final PreferencesService _prefs = PreferencesService();
   String? sortBy = "Name"; // Default sort by Name
   String? _eventSlug;
   List<Map<String, dynamic>> _tableRows = [];
-  
-  
 
   final List<String> sortByItems = [
     "Name",
@@ -43,7 +44,9 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
 
   Future<void> _initPrefs() async {
     prefs = await SharedPreferences.getInstance();
-    _eventSlug = prefs.getString('selectedEventSlug');
+    _eventSlug = _prefs.selectedEventSlug;
+    developer.log('Selected event slug: $_eventSlug',
+        name: 'ReviewSyncPage');
     if (mounted) {
       setState(() {});
       await _loadLocalEntries();
@@ -51,11 +54,14 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
   }
 
   Future<void> _loadLocalEntries() async {
+    _eventSlug = _prefs.selectedEventSlug;
+    // developer.log('Loading local entries for event slug: $_eventSlug',
+    //     name: 'ReviewSyncPage');
     if (_eventSlug == null) {
       if (mounted) setState(() => _localEntries = []);
       return;
     }
-    
+
     final storedJson = prefs.getString('${_eventSlug}_raw_times');
     if (storedJson == null || storedJson.isEmpty) {
       if (mounted) setState(() => _localEntries = []);
@@ -73,9 +79,11 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
       if (mounted) setState(() => _localEntries = []);
     }
     // Also attempt to load participant names for the selected event (to show names)
+
     try {
       if (_eventSlug != null && _eventSlug!.isNotEmpty) {
-        final participants = await _networkManager.fetchParticipantNames(eventName: _eventSlug!);
+        final participants =
+            await _networkManager.fetchParticipantNames(eventName: _eventSlug!);
         if (mounted) setState(() => _bibToName = participants);
       }
     } catch (e) {
@@ -90,8 +98,6 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
     developer.log('Sort by changed to $newValue');
   }
 
- 
-
   Future<Map<String, dynamic>> buildBatchPayload(List entriesToProcess) async {
     for (final entry in entriesToProcess) {
       // Add logic to strip the meta field and any other unnecessary fields
@@ -104,7 +110,7 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
 
   Future<void> _updateLocalEntries() async {
     if (_eventSlug == null) return;
-    
+
     try {
       final storedJson = prefs.getString('${_eventSlug}_raw_times');
       if (storedJson == null || storedJson.isEmpty) return;
@@ -138,7 +144,8 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
 
   void onSyncPressed() async {
     if (_eventSlug == null || _eventSlug!.isEmpty) {
-      developer.log('No event slug selected; cannot sync', name: 'ReviewSyncPage');
+      developer.log('No event slug selected; cannot sync',
+          name: 'ReviewSyncPage');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No event selected!')),
@@ -150,7 +157,7 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
     try {
       final storedJson = prefs.getString('${_eventSlug}_raw_times');
       final List<dynamic> entriesToProcess = [];
-      
+
       if (storedJson == null || storedJson.isEmpty) {
         developer.log('No local data to sync', name: 'ReviewSyncPage');
         if (mounted) {
@@ -165,7 +172,8 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
       final List<dynamic> allEntries = json.decode(storedJson);
       for (var entry in allEntries) {
         if (entry is Map && entry['meta']?['synced'] != true) {
-          entriesToProcess.add(Map<String, dynamic>.from(entry)); // Create a copy
+          entriesToProcess
+              .add(Map<String, dynamic>.from(entry)); // Create a copy
         }
       }
 
@@ -181,22 +189,28 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
       // Show loading indicator
       final scaffold = ScaffoldMessenger.of(context);
       scaffold.showSnackBar(
-        const SnackBar(content: Text('Syncing entries...'), duration: Duration(seconds: 5)),
+        const SnackBar(
+            content: Text('Syncing entries...'),
+            duration: Duration(seconds: 5)),
       );
 
       // Process the sync
       final entriesToSync = await buildBatchPayload(entriesToProcess);
       print('Entries to sync: ${entriesToSync.length}');
       print(jsonEncode(entriesToSync));
-      final success = await _networkManager.syncEntries(_eventSlug!, entriesToSync);
-      
-      developer.log('Sync completed, success: $success', name: 'ReviewSyncPage');
-      
+      final success =
+          await _networkManager.syncEntries(_eventSlug!, entriesToSync);
+
+      developer.log('Sync completed, success: $success',
+          name: 'ReviewSyncPage');
+
       if (success && mounted) {
         await _updateLocalEntries();
         scaffold.hideCurrentSnackBar();
         scaffold.showSnackBar(
-          SnackBar(content: Text('Successfully synced ${entriesToProcess.length} entries!')),
+          SnackBar(
+              content: Text(
+                  'Successfully synced ${entriesToProcess.length} entries!')),
         );
       } else if (mounted) {
         scaffold.hideCurrentSnackBar();
@@ -218,7 +232,6 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
     // TODO: Implement export functionality
     developer.log('Export button pressed', name: 'ReviewSyncPage');
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -248,9 +261,8 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // TODO: Replace with actual aidstation
                   Text(
-                    'aidStation Entries:',
+                    '${_prefs.selectedAidStation} Entries:',
                     style: TextStyle(fontSize: 20),
                   ),
                   Text(
@@ -263,9 +275,13 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
               // Build rows for the data table from local queued entries
               Builder(builder: (context) {
                 _tableRows = _localEntries.map((item) {
-                  final attrs = (item['attributes'] is Map) ? Map<String, dynamic>.from(item['attributes']) : <String, dynamic>{};
+                  final attrs = (item['data'] is List &&
+                          (item['data'] as List).isNotEmpty)
+                      ? Map<String, dynamic>.from(
+                          (item['data'] as List)[0]['attributes'] ?? {})
+                      : <String, dynamic>{};
                   final bibStr = attrs['bib_number']?.toString() ?? '';
-                  final bib = int.tryParse(bibStr ?? '') ?? -1;
+                  final bib = int.tryParse(bibStr) ?? -1;
                   final synced = attrs['synced'] == true;
                   final name = (bib != -1 && _bibToName.containsKey(bib))
                       ? _bibToName[bib]!['fullName']

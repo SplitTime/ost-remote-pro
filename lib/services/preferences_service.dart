@@ -7,6 +7,11 @@ class PreferencesService {
 
   late SharedPreferences _prefs;
 
+  // clear all preferences (for testing or logout)
+  Future<void> clearAll() async {
+    await _prefs.clear();
+  }
+
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
   }

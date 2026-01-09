@@ -206,13 +206,13 @@ class NetworkManager {
   }
 
   Future<bool> syncEntries(String eventSlug, Map<String, dynamic> entriesPayload) async {
-    final token = await getToken();
+    final token = _prefs.token;
     if (token == null) {
       throw Exception('No authentication token found');
-      return false;
     }
 
-    final payload = entriesPayload;
+    // TODO: Validate entriesPayload structure before proceeding
+    final payload = entriesPayload['data'][1];
     print('Payload to sync:');
     print(jsonEncode(payload));
 
@@ -234,7 +234,6 @@ class NetworkManager {
       return true;
     } else {
       throw Exception('Failed to sync entries (${response.statusCode}): ${response.body}');
-      return false;
     }
   }
 }
