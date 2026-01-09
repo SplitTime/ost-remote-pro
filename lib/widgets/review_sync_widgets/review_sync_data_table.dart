@@ -4,8 +4,6 @@ class ReviewSyncDataTable extends StatefulWidget {
   final String sortBy;
   final List<Map<String, dynamic>>? data;
   const ReviewSyncDataTable({super.key, required this.sortBy, this.data});
-  final List<Map<String, dynamic>>? data;
-  const ReviewSyncDataTable({super.key, required this.sortBy, this.data});
 
   @override
   State<ReviewSyncDataTable> createState() => _ReviewSyncDataTableState();
@@ -18,7 +16,6 @@ class _ReviewSyncDataTableState extends State<ReviewSyncDataTable> {
   void initState() {
     super.initState();
     _data = widget.data != null ? List<Map<String, dynamic>>.from(widget.data!) : _fetchData();
-    _data = widget.data != null ? List<Map<String, dynamic>>.from(widget.data!) : _fetchData();
     _sortData();
   }
 
@@ -28,11 +25,6 @@ class _ReviewSyncDataTableState extends State<ReviewSyncDataTable> {
     if (oldWidget.sortBy != widget.sortBy) {
       _sortData();
       setState(() {}); // trigger rebuild
-    }
-    if (oldWidget.data != widget.data && widget.data != null) {
-      _data = List<Map<String, dynamic>>.from(widget.data!);
-      _sortData();
-      setState(() {});
     }
     if (oldWidget.data != widget.data && widget.data != null) {
       _data = List<Map<String, dynamic>>.from(widget.data!);
@@ -84,8 +76,6 @@ class _ReviewSyncDataTableState extends State<ReviewSyncDataTable> {
   }
 
   void _sortData() {
-    final key = _mapSortKey(widget.sortBy);
-    _data.sort((a, b) => a[key].toString().compareTo(b[key].toString()));
     final key = _mapSortKey(widget.sortBy);
     _data.sort((a, b) => a[key].toString().compareTo(b[key].toString()));
   }
