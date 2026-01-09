@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
 import 'package:open_split_time_v2/pages/event_select.dart';
+import 'package:open_split_time_v2/services/preferences_service.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -14,8 +15,16 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _networkManager = NetworkManager();
+  final _prefs = PreferencesService();
+
   bool _isLoading = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController.text = _prefs.email ?? '';
+  }
 
   Future<void> _login() async {
     setState(() {
@@ -28,7 +37,6 @@ class _LoginPageState extends State<LoginPage> {
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
-
       // Ignoring API return for now
       if (!mounted) return;
       Navigator.pushReplacement(

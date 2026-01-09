@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/two_state_toggle.dart';
+import 'dart:developer' as developer;
 
 class EditEntryBottomSheet extends StatefulWidget {
   final String eventName;
@@ -337,7 +338,7 @@ class _EditEntryBottomSheetState extends State<EditEntryBottomSheet> {
                     ),
                     onPressed: () {
                       // TODO: Delete Logic
-                      print("Delete requested for bib ${_bibController.text}");
+                      developer.log("Delete requested for bib ${_bibController.text}");
                       Navigator.pop(context);
                     },
                     child: const Text('Delete'),
@@ -352,10 +353,10 @@ class _EditEntryBottomSheetState extends State<EditEntryBottomSheet> {
                     ),
                     onPressed: () {
                       // TODO: Update Logic
-                      print("Update requested:");
-                      print("Bib: ${_bibController.text}");
-                      print("Date: $_formattedDate");
-                      print("Time: $_formattedTime");
+                      developer.log("Update requested:");
+                      developer.log("Bib: ${_bibController.text}");
+                      developer.log("Date: $_formattedDate");
+                      developer.log("Time: $_formattedTime");
                       Navigator.pop(context);
                     },
                     child: const Text('Update'),

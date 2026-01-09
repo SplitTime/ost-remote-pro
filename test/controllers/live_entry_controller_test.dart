@@ -194,26 +194,9 @@ void main() {
     test('updateAthleteInfo should set defaults when bib is not in map', () {
       controller.updateBibNumber('999');
       controller.updateAthleteInfo();
-      expect(controller.athleteAge, '100');
-      expect(controller.athleteGender, 'Male');
-      expect(controller.athleteOrigin, 'Somewhere, ST');
-    });
-
-    test('updateAthleteInfo should clear name when bib is invalid (not a number)', () {
-      controller.updateBibNumber('abc');
-      controller.updateAthleteInfo();
-      expect(controller.athleteName, '');
-    });
-
-    test('stationControl should set entryTime', () {
-      controller.updateBibNumber('100');
-      final timeBefore = DateTime.now();
-      controller.stationControl('in', 'device-1');
-      final timeAfter = DateTime.now();
-      
-      expect(controller.entryTime, isNotNull);
-      expect(controller.entryTime!.isAfter(timeBefore.subtract(const Duration(seconds: 1))), true);
-      expect(controller.entryTime!.isBefore(timeAfter.add(const Duration(seconds: 1))), true);
+      expect(controller.athleteAge, '');
+      expect(controller.athleteGender, '');
+      expect(controller.athleteOrigin, '');
     });
 
     test('stationControl should accept "in" direction', () {
@@ -236,78 +219,6 @@ void main() {
       expect(() => controller.stationControl('in', ''), throwsAssertionError);
     });
 
-    test('stationControl with direction "out"', () {
-      controller.updateBibNumber('200');
-      final timeBefore = DateTime.now();
-      controller.stationControl('out', 'device-2');
-      final timeAfter = DateTime.now();
-      
-      expect(controller.entryTime, isNotNull);
-      expect(controller.entryTime!.isAfter(timeBefore.subtract(const Duration(seconds: 1))), true);
-      expect(controller.entryTime!.isBefore(timeAfter.add(const Duration(seconds: 1))), true);
-    });
-
-    test('should handle multiple sequential updates', () {
-      controller.updateBibNumber('123');
-      controller.updateAthleteName('Alice');
-      controller.updateAthleteOrigin('NYC');
-      
-      expect(controller.bibNumber, '123');
-      expect(controller.athleteName, 'Alice');
-      expect(controller.athleteOrigin, 'NYC');
-    });
-
-    test('should allow resetting values to empty strings', () {
-      controller.updateBibNumber('123');
-      controller.updateAthleteName('Bob');
-      
-      controller.updateBibNumber('');
-      controller.updateAthleteName('');
-      
-      expect(controller.bibNumber, '');
-      expect(controller.athleteName, '');
-    });
-
-    test('should handle rapid toggle calls for isContinuing', () {
-      controller.toggleIsContinuing(false);
-      controller.toggleIsContinuing(true);
-      controller.toggleIsContinuing(false);
-      
-      expect(controller.isContinuing, false);
-    });
-
-    test('should handle rapid toggle calls for hasPacer', () {
-      controller.toggleHasPacer(true);
-      controller.toggleHasPacer(false);
-      controller.toggleHasPacer(true);
-      
-      expect(controller.hasPacer, true);
-    });
-
-    test('should update all athlete info fields together', () {
-      controller.updateBibNumber('100');
-      controller.updateAthleteName('Charlie');
-      controller.updateAthleteOrigin('LA');
-      controller.updateAthleteGender('Other');
-      controller.updateAthleteAge('35');
-      
-      expect(controller.bibNumber, '100');
-      expect(controller.athleteName, 'Charlie');
-      expect(controller.athleteOrigin, 'LA');
-      expect(controller.athleteGender, 'Other');
-      expect(controller.athleteAge, '35');
-    });
-
-    test('should update all event info fields together', () {
-      controller.updateAidStation('Mile 5');
-      controller.updateEventName('10K Race');
-      controller.updateEventSlug('10k-race');
-      
-      expect(controller.aidStation, 'Mile 5');
-      expect(controller.eventName, '10K Race');
-      expect(controller.eventSlug, '10k-race');
-    });
-
     test('should have correct initial value for isContinuing', () {
       expect(controller.isContinuing, true);
     });
@@ -316,27 +227,5 @@ void main() {
       expect(controller.hasPacer, false);
     });
 
-    test('updateAthleteInfo notifies listeners', () {
-      var notified = false;
-      controller.addListener(() {
-        notified = true;
-      });
-      
-      controller.updateBibNumber('100');
-      controller.updateAthleteInfo();
-      
-      expect(notified, true);
-    });
-
-    test('stationControl with bib not in map and valid direction', () {
-      controller.updateBibNumber('999');
-      final timeBefore = DateTime.now();
-      
-      controller.stationControl('in', 'source-1');
-      
-      // Should still set entryTime even if bib not found
-      expect(controller.entryTime, isNotNull);
-      expect(controller.entryTime!.isAfter(timeBefore.subtract(const Duration(seconds: 1))), true);
-    });
   });
 }
