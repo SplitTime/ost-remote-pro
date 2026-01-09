@@ -42,6 +42,13 @@ class PageRouterDrawer extends StatelessWidget {
               Navigator.pushNamed(context, '/ReviewSync');
             },
           ),
+          ListTile(
+            title: const Text("Utilities"),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/Utilities');
+            },
+          ),
           // Add more menu items here
         ],
       ),
