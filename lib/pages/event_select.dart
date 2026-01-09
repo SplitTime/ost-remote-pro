@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:open_split_time_v2/widgets/dropdown_menu.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
 import 'package:open_split_time_v2/services/preferences_service.dart';
