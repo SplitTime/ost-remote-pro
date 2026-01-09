@@ -1,9 +1,17 @@
-import 'dart:convert';
+// live_entry.dart
 import 'package:flutter/material.dart';
+
+// Widgets
+import 'package:open_split_time_v2/widgets/live_entry_widgets/clock.dart';
 import 'package:open_split_time_v2/widgets/page_router.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/numpad.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/two_state_toggle.dart';
-import 'package:open_split_time_v2/services/network_manager.dart';
+
+import 'package:open_split_time_v2/widgets/live_entry_widgets/station_status_display.dart';
+import 'package:open_split_time_v2/widgets/live_entry_widgets/edit_bottom_sheet.dart';
+
+// Controller
+import 'package:open_split_time_v2/controllers/live_entry_controller.dart';
 
 class LiveEntryScreen extends StatefulWidget {
   const LiveEntryScreen({super.key});
@@ -12,85 +20,35 @@ class LiveEntryScreen extends StatefulWidget {
   State<LiveEntryScreen> createState() => _LiveEntryScreenState();
 }
 
-
 class _LiveEntryScreenState extends State<LiveEntryScreen> {
-  final NetworkManager _networkManager = NetworkManager();
-  Map<int, String> _bibNumberToName = {};
+  final LiveEntryController _controller = LiveEntryController();
+
+  bool _isStationPressed = false;
   bool _isLoading = true;
-  String? _eventName;
-  String? _eventSlug;
-  String? _aidStation;
 
-  // We need to format the entered time to the local time zone
-  String _formatEnteredTimeLocal() {
-    final now = DateTime.now();
-    final y = now.year.toString().padLeft(4, '0');
-    final mo = now.month.toString().padLeft(2, '0');
-    final d = now.day.toString().padLeft(2, '0');
-    final hh = now.hour.toString().padLeft(2, '0');
-    final mm = now.minute.toString().padLeft(2, '0');
-    final ss = now.second.toString().padLeft(2, '0');
-    final offset = now.timeZoneOffset;
-    final sign = offset.isNegative ? '-' : '+';
-    final oh = offset.inHours.abs().toString().padLeft(2, '0');
-    final omin = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
-    final offsetStr = '$sign$oh:$omin';
-    return '$y-$mo-$d $hh:$mm:$ss$offsetStr';
-  }
+  void _showEditSheet() {
+    // Format date and time separately
+    final dateStr =
+        "${_controller.entryTime!.year}-${_controller.entryTime!.month.toString().padLeft(2, '0')}-${_controller.entryTime!.day.toString().padLeft(2, '0')}";
+    final timeStr =
+        "${_controller.entryTime!.hour.toString().padLeft(2, '0')}:${_controller.entryTime!.minute.toString().padLeft(2, '0')}:${_controller.entryTime!.second.toString().padLeft(2, '0')}";
 
-  void stationIn() {
-    if(_bibNumberToName[int.parse(bibNumber)] == null) {
-      // ignore: avoid_print
-      print('Bib number not found: $bibNumber');
-      return;
-    }
-    final entered = _formatEnteredTimeLocal();
-    final json = {
-      'data': [
-        {
-          'type': 'raw_time',
-          'attributes': {
-            'source': 'owens-laptop',
-            'sub_split_kind': 'in',
-            'with_pacer': hasPacer.toString(),
-            'entered_time': entered,
-            'split_name': _aidStation ?? '',
-            'bib_number': bibNumber,
-            'stopped_here': (!isContinuing).toString(),
-          }
-        }
-      ]
-    };
-
-    print(jsonEncode(json));
-  }
-
-  void stationOut() {
-    if(_bibNumberToName[int.parse(bibNumber)] == null) {
-      // ignore: avoid_print
-      print('Bib number not found: $bibNumber');
-      return;
-    }
-    final entered = _formatEnteredTimeLocal();
-    final json = {
-      'data': [
-        {
-          'type': 'raw_time',
-          'attributes': {
-            'source': 'owens-laptop',
-            'sub_split_kind': 'out',
-            'with_pacer': hasPacer.toString(),
-            'entered_time': entered,
-            'split_name': _aidStation ?? '',
-            'bib_number': bibNumber,
-            'stopped_here': (!isContinuing).toString(),
-          }
-        }
-      ]
-    };
-
-    
-    print(jsonEncode(json));
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allows sheet to grow if needed
+      builder: (context) {
+        return EditEntryBottomSheet(
+          eventName: _controller.eventName,
+          bibNumber: _controller.bibNumber,
+          athleteName: _controller.athleteName,
+          date: dateStr,
+          time: timeStr,
+          isContinuing: _controller
+              .isContinuing, // Assuming current toggle state, or store last state if needed
+          hasPacer: _controller.hasPacer,
+        );
+      },
+    );
   }
 
   @override
@@ -106,91 +64,93 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
   }
 
   Future<void> _loadParticipants() async {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final eventName = args['event'] as String;
-    final eventSlug = args['eventSlug'] as String;
-    final aidStationFromArgs = args['aidStation'] as String;
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    _controller.updateAidStation(args['aidStation'] as String);
+    _controller.updateEventName(args['event'] as String);
+    _controller.updateEventSlug(args['eventSlug'] as String);
 
-    
-    try {
-      final participants = await _networkManager.fetchParticipantNames(eventName: eventSlug);
-      if (mounted) {
-        setState(() {
-          _bibNumberToName = participants;
-          _isLoading = false;
-          _eventName = eventName;
-          _eventSlug = eventSlug;
-          _aidStation = aidStationFromArgs;
-        });
-      }
-    } catch (e) {
-      // ignore: avoid_print
-      print('Error loading participants: $e');
+    _controller.loadParticipants().then((_) {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
-    }
+    });
   }
 
-  // TODO: Use options for writing live entry data
-  bool isContinuing = true;
-  bool hasPacer = true;
-
-  String bibNumber = '';
-  String athleteName = '';
-
-  void _updateAthleteName() {
-    if (bibNumber.isNotEmpty) {
-      try {
-        final bib = int.parse(bibNumber);
-        athleteName = _bibNumberToName[bib] ?? '';
-      } catch (e) {
-        athleteName = '';
-      }
-    } else {
-      athleteName = '';
-    }
+  void _updateAthleteInfo() {
+    _controller.updateAthleteInfo();
+    setState(() {
+      _isStationPressed = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-  // Prefer the stored aid station (set during _loadParticipants), but fall back to args
-  final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-  final aidStation = _aidStation ?? args['aidStation'] as String;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Live Entry'),
       ),
       endDrawer: const PageRouterDrawer(),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           children: [
             // --- Top: Bib number and name ---
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Bib: $bibNumber',
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                if (_isLoading)
-                  const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                else
-                  Text(
-                    athleteName,
-                    style: const TextStyle(fontSize: 20),
+                // ... Left Column (Bib display) ...
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    children: [
+                      Text(_controller.bibNumber,
+                          style: const TextStyle(
+                              fontSize: 40, fontWeight: FontWeight.w900)),
+                      // ... Time of day ...
+                      Center(child: ClockWidget()),
+                    ],
                   ),
+                ),
+                // ... Right Column (Name / Green Box) ...
+                Expanded(
+                  flex: 2,
+                  child: SizedBox(
+                    height: 100,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          children: [
+                            _isLoading
+                                ? const CircularProgressIndicator()
+                                : Text(_controller.athleteName,
+                                    style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold)),
+
+                            // --- MODIFIED GREEN BOX SECTION ---
+                            StationStatusDisplay(
+                              isStationPressed: _isStationPressed,
+                              atheleteOrigin: _controller.athleteOrigin,
+                              showEditSheet: _showEditSheet,
+                              lastBib: _controller.bibNumber,
+                              lastEntryTime: _controller.entryTime,
+                            ),
+                          ],
+                        ),
+                        Text(
+                            '${_controller.athleteGender}  ${_controller.athleteAge}',
+                            style: const TextStyle(fontSize: 16)),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 15),
 
             // --- Toggles ---
             Row(
@@ -198,64 +158,79 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
               children: [
                 TwoStateToggle(
                   label: "Continuing",
-                  value: isContinuing,
+                  value: _controller.isContinuing,
                   onChanged: (val) {
                     setState(() {
-                      isContinuing = val;
+                      _controller.toggleIsContinuing(val);
                     });
                   },
                 ),
                 TwoStateToggle(
                   label: "With Pacer",
-                  value: hasPacer,
+                  value: _controller.hasPacer,
                   onChanged: (val) {
                     setState(() {
-                      hasPacer = val;
+                      _controller.toggleHasPacer(val);
                     });
                   },
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            
+            const SizedBox(height: 10),
+
             // Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  onPressed: stationIn,
-                  child: Text('$aidStation in'),
+                  onPressed: () {
+                    setState(() {
+                      _controller.stationControl('in', 'owens-laptop');
+                      _isStationPressed = true;
+                      _controller.updateBibNumber('');
+                    });
+                  },
+                  child: Text('${_controller.aidStation} in'),
                 ),
                 ElevatedButton(
-                  onPressed: stationOut,
-                  child: Text('$aidStation out'),
+                  onPressed: () {
+                    setState(() {
+                      _controller.stationControl('out', 'owens-laptop');
+                      _isStationPressed = true;
+                      _controller.updateBibNumber('');
+                    });
+                  },
+                  child: Text('${_controller.aidStation} out'),
                 ),
               ],
             ),
 
-            const SizedBox(height: 100),
+            const SizedBox(height: 50),
             // Numpad
             Expanded(
-              child: 
-                _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : NumPad(
-                  onNumberPressed: (digit) {
-                    setState(() {
-                      bibNumber += digit;
-                      _updateAthleteName();
-                    });
-                  },
-                  onBackspace: () {
-                    setState(() {
-                      if (bibNumber.isNotEmpty) {
-                        bibNumber = bibNumber.substring(0, bibNumber.length - 1);
-                        _updateAthleteName();
-                      }
-                    });
-                  },
-                ) 
-              )
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : NumPad(
+                        onNumberPressed: (digit) {
+                          setState(() {
+                            _controller
+                                .updateBibNumber(_controller.bibNumber + digit);
+                            _updateAthleteInfo();
+                            _isStationPressed = false;
+                          });
+                        },
+                        onBackspace: () {
+                          setState(() {
+                            if (_controller.bibNumber.isNotEmpty) {
+                              _controller.updateBibNumber(_controller.bibNumber
+                                  .substring(
+                                      0, _controller.bibNumber.length - 1));
+                              _updateAthleteInfo();
+                              _isStationPressed = false;
+                            }
+                          });
+                        },
+                      ))
           ],
         ),
       ),
