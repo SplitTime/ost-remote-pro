@@ -18,7 +18,6 @@ class ReviewSyncPage extends StatefulWidget {
 
 class _ReviewSyncPageState extends State<ReviewSyncPage> {
   final NetworkManager _networkManager = NetworkManager();
-  late SharedPreferences prefs;
   // TODO: Use PreferencesService instead of direct SharedPreferences access
   final PreferencesService _prefs = PreferencesService();
   String? sortBy = "Name"; // Default sort by Name
@@ -43,7 +42,6 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
   }
 
   Future<void> _initPrefs() async {
-    prefs = await SharedPreferences.getInstance();
     _eventSlug = _prefs.selectedEventSlug;
     developer.log('Selected event slug: $_eventSlug',
         name: 'ReviewSyncPage');
@@ -62,7 +60,7 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
       return;
     }
 
-    final storedJson = prefs.getString('${_eventSlug}_raw_times');
+    final storedJson = _prefs.rawTimes;
     if (storedJson == null || storedJson.isEmpty) {
       if (mounted) setState(() => _localEntries = []);
       return;
@@ -112,7 +110,7 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
     if (_eventSlug == null) return;
 
     try {
-      final storedJson = prefs.getString('${_eventSlug}_raw_times');
+      final storedJson = _prefs.rawTimes;
       if (storedJson == null || storedJson.isEmpty) return;
 
       final List<dynamic> entries = json.decode(storedJson);
@@ -127,7 +125,7 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
       }
 
       if (updated) {
-        await prefs.setString('${_eventSlug}_raw_times', json.encode(entries));
+        _prefs.rawTimes = json.encode(entries);
         if (mounted) {
           await _loadLocalEntries(); // Refresh the UI
         }
@@ -155,7 +153,7 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
     }
 
     try {
-      final storedJson = prefs.getString('${_eventSlug}_raw_times');
+      final storedJson = _prefs.rawTimes;
       final List<dynamic> entriesToProcess = [];
 
       if (storedJson == null || storedJson.isEmpty) {
@@ -276,11 +274,9 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
               // Build rows for the data table from local queued entries
               Builder(builder: (context) {
                 _tableRows = _localEntries.map((item) {
-                  final attrs = (item['data'] is List &&
-                          (item['data'] as List).isNotEmpty)
-                      ? Map<String, dynamic>.from(
-                          (item['data'] as List)[0]['attributes'] ?? {})
-                      : <String, dynamic>{};
+                  print("Item: ${item}");
+                  final attrs = (item['attributes'] is Map) ? 
+                  Map<String, dynamic>.from(item['attributes']) : <String, dynamic>{};
                   final bibStr = attrs['bib_number']?.toString() ?? '';
                   final bib = int.tryParse(bibStr) ?? -1;
                   final synced = attrs['synced'] == true;

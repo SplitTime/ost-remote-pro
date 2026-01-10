@@ -12,6 +12,15 @@ class PreferencesService {
     await _prefs.clear();
   }
 
+  Future<void> clear(String key) async {
+    if(key == null || key.isEmpty) {
+      // Just clear everything in the event of an empty key, perhaps we could discuss if this should error
+      await clearAll();
+      return;
+    }
+    await _prefs.remove(key);
+  }
+
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
   }
@@ -65,12 +74,12 @@ class PreferencesService {
   }
 
   // raw_times storage
-  String? get rawTimes => _prefs.getString('raw_times');
+  String? get rawTimes => _prefs.getString('${selectedEventSlug}_raw_times');
   set rawTimes(String? value) {
     if (value == null) {
-      _prefs.remove('raw_times');
+      _prefs.remove('${selectedEventSlug}_raw_times');
     } else {
-      _prefs.setString('raw_times', value);
+      _prefs.setString('${selectedEventSlug}_raw_times', value);
     }
   }
 }

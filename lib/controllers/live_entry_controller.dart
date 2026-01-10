@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:open_split_time_v2/services/preferences_service.dart';
 
 // Utils
 import 'dart:developer' as developer;
@@ -10,6 +11,8 @@ import 'package:open_split_time_v2/utils/time_utils.dart';
 class LiveEntryController extends ChangeNotifier {
   // States for the live entry screen
   final NetworkManager _networkManager;
+
+  final _prefs = PreferencesService();
 
   Map<int, Map<String, String>> _bibNumberToAtheleteInfo = {};
 
@@ -159,21 +162,17 @@ class LiveEntryController extends ChangeNotifier {
     }
 
     final json = {
-      'data': [
-        {
-          'type': 'raw_time',
-          'attributes': {
-            'source': source,
-            'sub_split_kind': inOut,
-            'with_pacer': _hasPacer.toString(),
-            'entered_time': TimeUtils.formatEnteredTimeLocal(),
-            'split_name': aidStation,
-            'bib_number': _bibNumber,
-            'stopped_here': (!_isContinuing).toString(),
-          },
-          'meta': {'synced': false}
-        }
-      ],
+      'type': 'raw_time',
+      'attributes': {
+        'source': source,
+        'sub_split_kind': inOut,
+        'with_pacer': _hasPacer.toString(),
+        'entered_time': TimeUtils.formatEnteredTimeLocal(),
+        'split_name': aidStation,
+        'bib_number': _bibNumber,
+        'stopped_here': (!_isContinuing).toString(),
+      },
+      'meta': {'synced': false} 
     };
 
     // Log the JSON being sent
@@ -186,16 +185,15 @@ class LiveEntryController extends ChangeNotifier {
   void appendEntry(newEntryJson) async {
     // Get SharedPreferences instance
     // TODO: Replace with PreferencesService
-    final prefs = await SharedPreferences.getInstance();
 
     // Get existing list OR create a new empty list
-    final storedJson = prefs.getString('${_eventSlug}_raw_times');
+    final storedJson = _prefs.rawTimes;
     List<dynamic> list = storedJson != null ? jsonDecode(storedJson) : [];
 
     // Add the new entry
     list.add(newEntryJson);
 
     // Save updated list
-    await prefs.setString('${_eventSlug}_raw_times', jsonEncode(list));
+    _prefs.rawTimes = jsonEncode(list);
   }
 }

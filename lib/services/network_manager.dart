@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
-
 import 'package:open_split_time_v2/services/preferences_service.dart';
 
 class NetworkManager {
@@ -212,9 +211,8 @@ class NetworkManager {
     }
 
     // TODO: Validate entriesPayload structure before proceeding
-    final payload = entriesPayload['data'][1];
     print('Payload to sync:');
-    print(jsonEncode(payload));
+    print(jsonEncode(entriesPayload));
 
     final response = await http.post(
       Uri.parse('$_baseUrl/api/v1/event_groups/$eventSlug/import?data_format=jsonapi_batch'),
@@ -223,7 +221,7 @@ class NetworkManager {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: jsonEncode(payload),
+      body: jsonEncode(entriesPayload),
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
