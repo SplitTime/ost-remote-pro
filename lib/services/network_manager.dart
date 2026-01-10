@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer' as developer;
+
+import 'package:open_split_time_v2/services/preferences_service.dart';
 
 class NetworkManager {
   static const _baseUrl = 'https://www.opensplittime.org/';
+  final PreferencesService _prefs = PreferencesService();
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
@@ -22,9 +24,10 @@ class NetworkManager {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
-      // Save token using SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', data['token'] ?? '');
+      // Save token using PreferencesService
+      _prefs.token = data['token'];
+      _prefs.tokenExpiration = DateTime.parse(data['expiration']);
+      _prefs.email = email;
 
       developer.log(
         'Login successful, token saved.',
@@ -33,7 +36,8 @@ class NetworkManager {
 
       return data;
     } else {
-      throw Exception('Login failed (${response.statusCode}): ${response.body}');
+      throw Exception(
+          'Login failed (${response.statusCode}): ${response.body}');
     }
   }
 
@@ -44,7 +48,8 @@ class NetworkManager {
     }
     try {
       final response = await http.get(
-        Uri.parse('${_baseUrl}api/v1/events?filter[editable]=true&filter[name]=$name'),
+        Uri.parse(
+            '${_baseUrl}api/v1/events?filter[editable]=true&filter[name]=$name'),
         headers: {
           'Authorization': token,
           'Accept': 'application/json',
@@ -54,7 +59,8 @@ class NetworkManager {
         final data = jsonDecode(response.body);
         if (data['data'] != null && data['data'] is List) {
           for (var event in data['data']) {
-            if (event['attributes'] != null && event['attributes']['name'] != null) {
+            if (event['attributes'] != null &&
+                event['attributes']['name'] != null) {
               final eventName = event['attributes']['name'].toString();
               if (eventName == name) {
                 return event['attributes']['slug'].toString();
@@ -63,9 +69,11 @@ class NetworkManager {
           }
         }
       } else if (response.statusCode == 401) {
-        throw Exception('\nAuthentication failed. Please try logging in again.');
+        throw Exception(
+            '\nAuthentication failed. Please try logging in again.');
       } else {
-        throw Exception('\nFailed to load events (${response.statusCode}): ${response.body}');
+        throw Exception(
+            '\nFailed to load events (${response.statusCode}): ${response.body}');
       }
     } catch (e) {
       throw Exception('Error fetching event ID: $e');
@@ -74,8 +82,7 @@ class NetworkManager {
   }
 
   Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token');
+    return _prefs.token;
   }
 
   Future<Map<String, List<String>>> fetchEventDetails() async {
@@ -83,7 +90,7 @@ class NetworkManager {
     if (token == null) {
       throw Exception('No authentication token found');
     }
-    
+
     final response = await http.get(
       Uri.parse('${_baseUrl}api/v1/events?filter[editable]=true'),
       headers: {
@@ -98,7 +105,8 @@ class NetworkManager {
       Map<String, List<String>> eventAidStations = {};
       if (data['data'] != null && data['data'] is List) {
         for (var event in data['data']) {
-          if (event['attributes'] != null && event['attributes']['name'] != null) {
+          if (event['attributes'] != null &&
+              event['attributes']['name'] != null) {
             final eventName = event['attributes']['name'].toString();
             final splits = event['attributes']['splitNames'];
             if (splits != null && splits is List) {
@@ -113,11 +121,12 @@ class NetworkManager {
     } else if (response.statusCode == 401) {
       throw Exception('\nAuthentication failed. Please try logging in again.');
     } else {
-      throw Exception('\nFailed to load events (${response.statusCode}): ${response.body}');
+      throw Exception(
+          '\nFailed to load events (${response.statusCode}): ${response.body}');
     }
   }
 
-  Future<Map<int, String>> fetchParticipantNames({
+  Future<Map<int, Map<String, String>>> fetchParticipantNames({
     required String eventName,
   }) async {
     final token = await getToken();
@@ -127,39 +136,46 @@ class NetworkManager {
 
     try {
       final response = await http.get(
-        Uri.parse('${_baseUrl}api/v1/events/$eventName?include=efforts&fields[efforts]=fullName,bibNumber'),
+        Uri.parse(
+            '${_baseUrl}api/v1/events/$eventName?include=efforts&fields[efforts]=fullName,bibNumber,age,gender,city,stateCode'),
         headers: {
           'Authorization': token,
           'Accept': 'application/json',
         },
       );
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        // Ensure 'included' exists and is a list
+
         if (data['included'] != null && data['included'] is List) {
           final included = data['included'] as List;
-          // Extract all efforts' attributes into a Map
-          final Map<int, String> effortsMap = {
+
+          final Map<int, Map<String, String>> effortsMap = {
             for (var effort in included)
-              if (effort['attributes'] != null && 
-                 effort['attributes']['bibNumber'] != null)
-                effort['attributes']['bibNumber'] as int:
-                effort['attributes']['fullName']?.toString() ?? ''
+              if (effort['attributes'] != null &&
+                  effort['attributes']['bibNumber'] != null)
+                effort['attributes']['bibNumber'] as int: {
+                  'fullName':
+                      effort['attributes']['fullName']?.toString() ?? '',
+                  'age': effort['attributes']['age']?.toString() ?? '',
+                  'gender': effort['attributes']['gender']?.toString() ?? '',
+                  'city': effort['attributes']['city']?.toString() ?? '',
+                  'stateCode':
+                      effort['attributes']['stateCode']?.toString() ?? '',
+                },
           };
-          return effortsMap; // e.g. {42: 'Alice Smith', 17: 'Bob Jones'}
+
+          developer.log(
+            'Fetched ${effortsMap.length} participants',
+            name: 'NetworkManager.fetchParticipantNames',
+          );
+          return effortsMap;
         }
       }
-      
-      // Add debug print for troubleshooting
-      // ignore: avoid_print
-      print('No participants found or invalid response for event: $eventName');
-      return {}; // fallback if not found or response invalid
     } catch (e) {
-      // ignore: avoid_print
-      print('Error fetching participants: $e');
-      return {};
+      developer.log('Error fetching participants: $e',
+          name: 'NetworkManager.fetchParticipantNames');
     }
+    return {};
   }
-
-  
 }
