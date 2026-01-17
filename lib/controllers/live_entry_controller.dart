@@ -160,7 +160,7 @@ class LiveEntryController extends ChangeNotifier {
           name: 'LiveEntryController');
       return;
     }
-
+    print(aidStation);
     final json = {
       'type': 'raw_time',
       'attributes': {
@@ -172,7 +172,9 @@ class LiveEntryController extends ChangeNotifier {
         'bib_number': _bibNumber,
         'stopped_here': (!_isContinuing).toString(),
       },
-      'meta': {'synced': false} 
+      'meta': {
+        'synced': false,
+      },
     };
 
     // Log the JSON being sent

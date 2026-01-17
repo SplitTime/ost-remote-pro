@@ -261,7 +261,7 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${_prefs.selectedAidStation} Entries:',
+                    '${_prefs.selectedEvent}',
                     style: TextStyle(fontSize: 20),
                   ),
                   Text(
@@ -274,16 +274,20 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
               // Build rows for the data table from local queued entries
               Builder(builder: (context) {
                 _tableRows = _localEntries.map((item) {
-                  print("Item: ${item}");
                   final attrs = (item['attributes'] is Map) ? 
                   Map<String, dynamic>.from(item['attributes']) : <String, dynamic>{};
+                  final meta = (item['meta'] is Map) ?
+                  Map<String, dynamic>.from(item['meta']) : <String, dynamic>{};
+
+                  final aidStation = attrs['split_name']?.toString() ?? '';
                   final bibStr = attrs['bib_number']?.toString() ?? '';
                   final bib = int.tryParse(bibStr) ?? -1;
-                  final synced = attrs['synced'] == true;
+                  final synced = meta['synced'];
                   final name = (bib != -1 && _bibToName.containsKey(bib))
                       ? _bibToName[bib]!['fullName']
                       : (attrs['fullName']?.toString() ?? '');
                   return {
+                    'AidStation': aidStation,
                     'Bib #': bibStr,
                     'Name': name ?? '',
                     'In/Out': attrs['sub_split_kind']?.toString() ?? '',
@@ -291,6 +295,7 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
                     'Synced': synced,
                   };
                 }).toList();
+                print('[TABLE ROWS BUILDER OUTPUT] $_tableRows');
                 return ReviewSyncDataTable(sortBy: sortBy!, data: _tableRows);
               }),
             ],

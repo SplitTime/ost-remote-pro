@@ -97,6 +97,7 @@ class _ReviewSyncDataTableState extends State<ReviewSyncDataTable> {
             horizontalInside: BorderSide(width: 0.5, color: Colors.grey),
           ),
           children: _data.map((row) {
+            print('[DATA.MAP] Processing row: ${row}');
             final textColor =
                 row['Synced'] == true ? Colors.green[700]! : Colors.black;
             return TableRow(
