@@ -160,7 +160,6 @@ class LiveEntryController extends ChangeNotifier {
           name: 'LiveEntryController');
       return;
     }
-    print(aidStation);
     final json = {
       'type': 'raw_time',
       'attributes': {

@@ -194,8 +194,6 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
 
       // Process the sync
       final entriesToSync = await buildBatchPayload(entriesToProcess);
-      print('Entries to sync: ${entriesToSync.length}');
-      print(jsonEncode(entriesToSync));
       final success =
           await _networkManager.syncEntries(_eventSlug!, entriesToSync);
 

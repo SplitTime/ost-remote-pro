@@ -180,13 +180,11 @@ class NetworkManager {
               if (effort['attributes'] != null &&
                   effort['attributes']['bibNumber'] != null)
                 effort['attributes']['bibNumber'] as int: {
-                  'fullName':
-                      effort['attributes']['fullName']?.toString() ?? '',
+                  'fullName': effort['attributes']['fullName']?.toString() ?? '',
                   'age': effort['attributes']['age']?.toString() ?? '',
                   'gender': effort['attributes']['gender']?.toString() ?? '',
                   'city': effort['attributes']['city']?.toString() ?? '',
-                  'stateCode':
-                      effort['attributes']['stateCode']?.toString() ?? '',
+                  'stateCode': effort['attributes']['stateCode']?.toString() ?? '',
                 },
           };
 
@@ -209,10 +207,6 @@ class NetworkManager {
     if (token == null) {
       throw Exception('No authentication token found');
     }
-
-    // TODO: Validate entriesPayload structure before proceeding
-    print('Payload to sync:');
-    print(jsonEncode(entriesPayload));
 
     final response = await http.post(
       Uri.parse('$_baseUrl/api/v1/event_groups/$eventSlug/import?data_format=jsonapi_batch'),

@@ -28,7 +28,6 @@ class PageRouterDrawer extends StatelessWidget {
                 final savedEvent = prefs.getString('selectedEvent');
                 final savedAid = prefs.getString('selectedAidStation');
                 final savedSlug = prefs.getString('selectedEventSlug');
-                print("Got the following values: from prefs: event=$savedEvent, aidStation=$savedAid, eventSlug=$savedSlug");
 
                 if (savedEvent != null && savedAid != null && savedSlug != null) {
                   Navigator.pushNamed(context, '/liveEntry', arguments: {
