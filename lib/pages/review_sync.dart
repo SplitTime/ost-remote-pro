@@ -295,7 +295,6 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
                     'Synced': synced,
                   };
                 }).toList();
-                print('[TABLE ROWS BUILDER OUTPUT] $_tableRows');
                 return ReviewSyncDataTable(sortBy: sortBy!, data: _tableRows);
               }),
             ],
