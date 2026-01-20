@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/network_manager.dart';
+import '../../services/network_manager.dart';
 
 class ChangeStationScreen extends StatefulWidget {
   const ChangeStationScreen({super.key});

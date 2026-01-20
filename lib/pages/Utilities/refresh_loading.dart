@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:open_split_time_v2/pages/refresh_success.dart';
+import 'package:open_split_time_v2/pages/Utilities/refresh_success.dart';
 
 class RefreshLoadingScreen extends StatefulWidget {
   const RefreshLoadingScreen({super.key});
