@@ -75,15 +75,20 @@ class NetworkManager {
     return _prefs.token;
   }
 
-  Future<Map<String, List<String>>> fetchEventDetails() async {
+  Future<Map<String, List<String>>> fetchEventDetails({String? eventName}) async {
     final token = _prefs.token;
     if (token == null) {
       throw Exception('No authentication token found');
     }
     
     try {
+      String url = '${_baseUrl}api/v1/event_groups?filter[editable]=true&filter[availableLive]=true';
+      if (eventName != null) {
+        url += '&filter[name]=$eventName';
+      }
+      
       final response = await http.get(
-        Uri.parse('${_baseUrl}api/v1/event_groups?filter[editable]=true&filter[availableLive]=true'),
+        Uri.parse(url),
         headers: {
           'Authorization': token,
           'Accept': 'application/json',
