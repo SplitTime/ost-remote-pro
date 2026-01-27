@@ -29,13 +29,24 @@ class PreferencesService {
   String get selectedEvent => _prefs.getString('selected_event_key') ?? '';
   set selectedEvent(String value) => _prefs.setString('selected_event_key', value);
 
-  // Aid Station Name
+  // Cached Aid Station Names
+  List<String> get aidStationsForSelectedEvent => _prefs.getStringList('selected_event_aid_stations') ?? [];
+  set aidStationsForSelectedEvent(List<String> value) => _prefs.setStringList('se_aid_stations', value);
+
+  // Cached Participant Bibs -> Names Needs to be a map
+  List<String> get participantBibsForSelectedEvent => _prefs.getStringList('selected_event_participant_information') ?? [];
+  set participantBibsForSelectedEvent(List<String> value) => _prefs.setStringList('selected_event_participant_information', value);
+
+
+  // Selected Aid Station Name
   String get selectedAidStation => _prefs.getString('selected_station_key') ?? '';
   set selectedAidStation(String value) => _prefs.setString('selected_station_key', value);
 
   // Event Slug
   String get selectedEventSlug => _prefs.getString('selected_event_slug_key') ?? '';
   set selectedEventSlug(String value) => _prefs.setString('selected_event_slug_key', value);
+
+
 
   // Login Token
   String? get token => _prefs.getString('token');

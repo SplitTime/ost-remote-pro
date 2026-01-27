@@ -78,8 +78,10 @@ class _EventSelectState extends State<EventSelect> {
       }
       if (eventSlug != null) {
         // Save selections to preferences
-        _prefs.selectedEvent = _selectedEvent!;
-        _prefs.selectedAidStation = _selectedAidStation!;
+        _prefs.aidStationsForSelectedEvent = _eventAidStations[_selectedEvent] ?? [];
+        List<String> participantInfo = [];
+        Map<int, Map<String,String>> participantJSON = await _networkManager.fetchParticipantNames(eventName: eventSlug);
+        print(participantJSON);
 
         if (!mounted) return; // Safety check if widget was disposed
         Navigator.pushNamed(

@@ -5,7 +5,6 @@ import 'package:open_split_time_v2/widgets/page_router.dart';
 import 'package:open_split_time_v2/widgets/review_sync_widgets/sync_export_footer.dart';
 import 'package:open_split_time_v2/widgets/review_sync_widgets/review_sync_data_table.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:open_split_time_v2/services/preferences_service.dart';
 import 'dart:developer' as developer;
 
@@ -53,8 +52,6 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
 
   Future<void> _loadLocalEntries() async {
     _eventSlug = _prefs.selectedEventSlug;
-    // developer.log('Loading local entries for event slug: $_eventSlug',
-    //     name: 'ReviewSyncPage');
     if (_eventSlug == null) {
       if (mounted) setState(() => _localEntries = []);
       return;
