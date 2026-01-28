@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/widgets/dropdown_menu.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class EventSelect extends StatefulWidget {
   const EventSelect({super.key});
@@ -51,36 +53,45 @@ class _EventSelectState extends State<EventSelect> {
   }
 
   Future<void> _navigateToLiveEntry(BuildContext context) async {
-    if (_selectedEvent != null && _selectedAidStation != null) {
-      // First get the event slug
-      final eventSlug = await _networkManager.getEventSlugByName(_selectedEvent!);
-      if (eventSlug != null) {
-        if (!mounted) return; // Safety check if widget was disposed
-        Navigator.pushNamed(
-          context,
-          '/liveEntry',
-          arguments: {
-            'event': _selectedEvent!,
-            'eventSlug': eventSlug,
-            'aidStation': _selectedAidStation!,
-          },
-        );
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not find event details.'),
-          ),
-        );
-      }
+  if (_selectedEvent != null && _selectedAidStation != null) {
+    // First get the event slug
+    final eventSlug = await _networkManager.getEventSlugByName(_selectedEvent!);
+
+    if (eventSlug != null) {
+      // Persist selections for Utilities -> Refresh Data
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString("eventName", _selectedEvent!);
+      await prefs.setString("eventSlug", eventSlug);
+      await prefs.setString("selectedAid", _selectedAidStation!);
+
+      if (!mounted) return; // Safety check if widget was disposed
+
+      Navigator.pushNamed(
+        context,
+        '/liveEntry',
+        arguments: {
+          'event': _selectedEvent!,
+          'eventSlug': eventSlug,
+          'aidStation': _selectedAidStation!,
+        },
+      );
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select both event and aid station.'),
+          content: Text('Could not find event details.'),
         ),
       );
     }
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Please select both event and aid station.'),
+      ),
+    );
   }
+}
+
 
 
   @override
