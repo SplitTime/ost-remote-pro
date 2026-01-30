@@ -156,6 +156,46 @@ class NetworkManager {
     }
   }
 
+  Future<List<String>> fetchParticipantDetailsForGivenEvent({ required String eventName }) async {
+    final token = _prefs.token;
+    if (token == null) {
+      throw Exception('No authentication token found');
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('${_baseUrl}api/v1/events/$eventName?include=efforts&fields[efforts]=fullName,bibNumber,age,gender,city,stateCode'),
+        headers: {
+          'Authorization': token,
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        
+        List<String> participantInfo = [];
+
+
+        if (data['included'] != null && data['included'] is List) {
+          for (var effort in data['included']) {
+            if (effort['attributes'] != null) {
+              final String attributes = jsonEncode(effort['attributes']);
+              participantInfo.add(attributes);
+            }
+          }
+        }
+        return participantInfo;
+      } else if (response.statusCode == 401) {
+        throw Exception('Authentication failed. Please try logging in again.');
+      } else {
+        throw Exception('Failed to load participant details (${response.statusCode}): ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching participant details: $e');
+    }
+  }
+
   Future<Map<int, Map<String, String>>> fetchParticipantNames({
     required String eventName,
   }) async {
