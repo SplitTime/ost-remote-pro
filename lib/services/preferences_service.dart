@@ -34,8 +34,8 @@ class PreferencesService {
   set aidStationsForSelectedEvent(List<String> value) => _prefs.setStringList('se_aid_stations', value);
 
   // Cached Participant Bibs -> Names Needs to be a map
-  List<String> get participantBibsForSelectedEvent => _prefs.getStringList('selected_event_participant_information') ?? [];
-  set participantBibsForSelectedEvent(List<String> value) => _prefs.setStringList('selected_event_participant_information', value);
+  List<String> get participantInfoForSelectedEvent => _prefs.getStringList('selected_event_participant_information') ?? [];
+  set participantInfoForSelectedEvent(List<String> value) => _prefs.setStringList('selected_event_participant_information', value);
 
 
   // Selected Aid Station Name

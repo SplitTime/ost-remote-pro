@@ -106,8 +106,18 @@ class LiveEntryController extends ChangeNotifier {
   Future<void> loadParticipants() async {
     try {
       final participants =
-          await _networkManager.fetchParticipantNames(eventName: eventSlug);
-      _bibNumberToAtheleteInfo = participants;
+           _prefs.participantInfoForSelectedEvent;
+      _bibNumberToAtheleteInfo = participants.asMap().map((index, participantJson) {
+        final participant = jsonDecode(participantJson);
+        final bibNumber = participant['bibNumber'] as int;
+        return MapEntry(bibNumber, {
+          'fullName': participant['fullName']?.toString() ?? '',
+          'age': participant['age']?.toString() ?? '',
+          'gender': participant['gender']?.toString() ?? '',
+          'city': participant['city']?.toString() ?? '',
+          'stateCode': participant['stateCode']?.toString() ?? '',
+        });
+      });
       notifyListeners();
     } catch (e) {
       developer.log('Error loading participants: $e',

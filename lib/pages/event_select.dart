@@ -80,8 +80,7 @@ class _EventSelectState extends State<EventSelect> {
         // Save selections to preferences
         _prefs.aidStationsForSelectedEvent = _eventAidStations[_selectedEvent] ?? [];
         List<String> participantJSON = await _networkManager.fetchParticipantDetailsForGivenEvent(eventName: eventSlug);
-        print(participantJSON);
-
+        _prefs.participantInfoForSelectedEvent = participantJSON;
         if (!mounted) return; // Safety check if widget was disposed
         Navigator.pushNamed(
           context,
