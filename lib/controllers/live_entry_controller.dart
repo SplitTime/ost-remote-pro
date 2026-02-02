@@ -10,7 +10,7 @@ import 'package:open_split_time_v2/utils/time_utils.dart';
 
 class LiveEntryController extends ChangeNotifier {
   // States for the live entry screen
-  final NetworkManager _networkManager;
+  final NetworkManager _networkManager; // Not being used for now, only here because there's an import at the bottom that requires it for perhaps testing purposes
 
   final _prefs = PreferencesService();
 
@@ -105,19 +105,7 @@ class LiveEntryController extends ChangeNotifier {
   // load participants
   Future<void> loadParticipants() async {
     try {
-      final participants =
-           _prefs.participantInfoForSelectedEvent;
-      _bibNumberToAtheleteInfo = participants.asMap().map((index, participantJson) {
-        final participant = jsonDecode(participantJson);
-        final bibNumber = participant['bibNumber'] as int;
-        return MapEntry(bibNumber, {
-          'fullName': participant['fullName']?.toString() ?? '',
-          'age': participant['age']?.toString() ?? '',
-          'gender': participant['gender']?.toString() ?? '',
-          'city': participant['city']?.toString() ?? '',
-          'stateCode': participant['stateCode']?.toString() ?? '',
-        });
-      });
+      _bibNumberToAtheleteInfo = _prefs.bibNumberToAtheleteInfoForGivenEvent;
       notifyListeners();
     } catch (e) {
       developer.log('Error loading participants: $e',

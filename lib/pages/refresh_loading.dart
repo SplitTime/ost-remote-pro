@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_split_time_v2/services/preferences_service.dart';
 import 'package:open_split_time_v2/pages/refresh_success.dart';
 
 class RefreshLoadingScreen extends StatefulWidget {
@@ -18,6 +19,8 @@ class _RefreshLoadingScreenState extends State<RefreshLoadingScreen> {
   }
 
   Future<void> _startProgress() async {
+
+    final PreferencesService _prefs = PreferencesService();
     // Animate progress bar over 2 seconds
     for (int i = 0; i <= 100; i++) {
       await Future.delayed(const Duration(milliseconds: 20));
@@ -27,11 +30,17 @@ class _RefreshLoadingScreenState extends State<RefreshLoadingScreen> {
     }
 
     // After animation, go to success page
-    if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const RefreshSuccessScreen()),
-    );
+    int refreshSuccess = await _prefs.refreshParticipantData();
+    if(refreshSuccess == 0){
+      // Handle failure case if needed don't have a page for that yet
+    }
+    else if(refreshSuccess == 1) {
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const RefreshSuccessScreen()),
+      );
+    }
   }
 
   @override

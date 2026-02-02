@@ -156,7 +156,7 @@ class NetworkManager {
     }
   }
 
-  Future<List<String>> fetchParticipantDetailsForGivenEvent({ required String eventName }) async {
+  Future<List<String>> fetchParticipantDetailsForGivenEvent({ required String eventSlug }) async {
     final token = _prefs.token;
     if (token == null) {
       throw Exception('No authentication token found');
@@ -164,7 +164,7 @@ class NetworkManager {
 
     try {
       final response = await http.get(
-        Uri.parse('${_baseUrl}api/v1/events/$eventName?include=efforts&fields[efforts]=fullName,bibNumber,age,gender,city,stateCode'),
+        Uri.parse('${_baseUrl}api/v1/events/$eventSlug?include=efforts&fields[efforts]=fullName,bibNumber,age,gender,city,stateCode'),
         headers: {
           'Authorization': token,
           'Accept': 'application/json',

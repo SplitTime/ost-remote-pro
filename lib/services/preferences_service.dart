@@ -1,4 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:open_split_time_v2/services/network_manager.dart';
+import 'dart:convert';
 
 class PreferencesService {
   static final PreferencesService _instance = PreferencesService._internal();
@@ -33,10 +35,39 @@ class PreferencesService {
   List<String> get aidStationsForSelectedEvent => _prefs.getStringList('selected_event_aid_stations') ?? [];
   set aidStationsForSelectedEvent(List<String> value) => _prefs.setStringList('se_aid_stations', value);
 
-  // Cached Participant Bibs -> Names Needs to be a map
+  // Cached Participant Information, easier to store on disk like this than map. Map can be easily rederived from simple JSON strings
   List<String> get participantInfoForSelectedEvent => _prefs.getStringList('selected_event_participant_information') ?? [];
   set participantInfoForSelectedEvent(List<String> value) => _prefs.setStringList('selected_event_participant_information', value);
 
+  Map<int, Map<String, String>> get bibNumberToAtheleteInfoForGivenEvent {
+    final List<String> participantJSON = participantInfoForSelectedEvent;
+    final Map<int, Map<String, String>> bibToInfo = {};
+    for (var participantStr in participantJSON) {
+      try {
+        final Map<String, dynamic> participantMap = participantStr.isNotEmpty ? Map<String, dynamic>.from(jsonDecode(participantStr)) : {};
+        if (participantMap.containsKey('bibNumber')) {
+          final int bibNumber = int.parse(participantMap['bibNumber'].toString());
+          final String name = participantMap['fullName']?.toString() ?? '';
+          final String origin = participantMap['origin']?.toString() ?? '';
+          final String age = participantMap['age']?.toString() ?? '';
+          final String gender = participantMap['gender']?.toString() ?? ''; 
+          final String city = participantMap['city']?.toString() ?? '';
+          final String stateCode = participantMap['stateCode']?.toString() ?? '';
+          bibToInfo[bibNumber] = {
+            'fullName': name,
+            'origin': origin,
+            'age': age,
+            'gender': gender,
+            'city': city,
+            'stateCode': stateCode,
+          };
+        }
+      } catch (e) {
+        // Ignore malformed JSON entries
+      }
+    }
+    return bibToInfo;
+  }
 
   // Selected Aid Station Name
   String get selectedAidStation => _prefs.getString('selected_station_key') ?? '';
@@ -93,4 +124,19 @@ class PreferencesService {
       _prefs.setString('${selectedEventSlug}_raw_times', value);
     }
   }
+
+  // Refresh participant data
+  Future<int> refreshParticipantData() async {
+    NetworkManager networkManager = NetworkManager();
+
+    try {
+      final List<String> participants = await networkManager.fetchParticipantDetailsForGivenEvent(eventSlug: selectedEventSlug);
+      participantInfoForSelectedEvent = participants;
+      print(participantInfoForSelectedEvent);
+      return 1; // Success
+    } catch (e) {
+      return 0; // On error, return 0
+    }
+  }
+  
 }

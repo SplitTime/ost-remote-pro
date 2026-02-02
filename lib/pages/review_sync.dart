@@ -77,9 +77,7 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
 
     try {
       if (_eventSlug != null && _eventSlug!.isNotEmpty) {
-        final participants =
-            await _networkManager.fetchParticipantNames(eventName: _eventSlug!);
-        if (mounted) setState(() => _bibToName = participants);
+        if (mounted) setState(() => _bibToName = _prefs.bibNumberToAtheleteInfoForGivenEvent);
       }
     } catch (e) {
       if (mounted) setState(() => _bibToName = {});
@@ -95,7 +93,7 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
 
   Future<Map<String, dynamic>> buildBatchPayload(List entriesToProcess) async {
     for (final entry in entriesToProcess) {
-      // Add logic to strip the meta field and any other unnecessary fields
+      // Any future fields that may need to be removed could be done so here before syncing, right now it's the artificial 'meta' field
       entry.remove('meta');
     }
     return {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:open_split_time_v2/widgets/dropdown_menu.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
 import 'package:open_split_time_v2/services/preferences_service.dart';
@@ -79,7 +78,7 @@ class _EventSelectState extends State<EventSelect> {
       if (eventSlug != null) {
         // Save selections to preferences
         _prefs.aidStationsForSelectedEvent = _eventAidStations[_selectedEvent] ?? [];
-        List<String> participantJSON = await _networkManager.fetchParticipantDetailsForGivenEvent(eventName: eventSlug);
+        List<String> participantJSON = await _networkManager.fetchParticipantDetailsForGivenEvent(eventSlug: eventSlug);
         _prefs.participantInfoForSelectedEvent = participantJSON;
         if (!mounted) return; // Safety check if widget was disposed
         Navigator.pushNamed(
