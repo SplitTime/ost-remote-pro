@@ -5,7 +5,9 @@ import 'package:open_split_time_v2/pages/review_sync.dart';
 import 'package:open_split_time_v2/pages/Utilities/utilities.dart';
 
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await PreferencesService().init();
   runApp(const MyApp());
 }
 
@@ -24,6 +26,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/liveEntry': (context) => const LiveEntryScreen(),
         '/ReviewSync': (context) => const ReviewSyncPage(),
+        '/eventSelect': (context) => const EventSelect(),
         '/Utilities': (context) => const UtilitiesPage(),
       },
     );

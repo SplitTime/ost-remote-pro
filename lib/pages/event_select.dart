@@ -12,6 +12,7 @@ class EventSelect extends StatefulWidget {
 }
 
 class _EventSelectState extends State<EventSelect> {
+  final PreferencesService prefs = PreferencesService();
   final NetworkManager _networkManager = NetworkManager();
   Map<String, List<String>> _eventAidStations = {};
   String? _selectedEvent;
@@ -22,6 +23,8 @@ class _EventSelectState extends State<EventSelect> {
   @override
   void initState() {
     super.initState();
+    _selectedEvent = prefs.selectedEvent;
+    _selectedAidStation = prefs.selectedAidStation;
     _loadEventDetails();
   }
 
@@ -124,6 +127,7 @@ class _EventSelectState extends State<EventSelect> {
                       CustomDropDownMenu(
                         items: _eventAidStations.keys.toList(),
                         hint: 'Select Event',
+                        initialValue: _selectedEvent,
                         onChanged: (value) {
                           setState(() {
                             _selectedEvent = value;
@@ -139,12 +143,14 @@ class _EventSelectState extends State<EventSelect> {
                             ? _eventAidStations[_selectedEvent!] ?? []
                             : [],
                         hint: 'Select Aid Station',
+                        initialValue: _selectedAidStation,
                         onChanged: (value) {
                           setState(() {
                             _selectedAidStation = value;
                           });
                         },
                       ),
+                      const SizedBox(height: 32),
                       ElevatedButton(
                         onPressed: () async => await _navigateToLiveEntry(context),
                         child: const Text('Begin Live Entry'),
