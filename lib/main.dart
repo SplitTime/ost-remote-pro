@@ -25,6 +25,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const LoginPage(),
+      navigatorObservers: [LiveEntryScreen.routeObserver],
       routes: {
         '/liveEntry': (context) => const LiveEntryScreen(),
         '/ReviewSync': (context) => const ReviewSyncPage(),

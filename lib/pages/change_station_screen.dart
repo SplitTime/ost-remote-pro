@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../services/network_manager.dart';
+import 'package:open_split_time_v2/services/preferences_service.dart';
 
 class ChangeStationScreen extends StatefulWidget {
   const ChangeStationScreen({super.key});
@@ -10,6 +10,8 @@ class ChangeStationScreen extends StatefulWidget {
 }
 
 class _ChangeStationScreenState extends State<ChangeStationScreen> {
+  final NetworkManager _networkManager = NetworkManager();
+  final PreferencesService _prefs = PreferencesService();
   String? selectedStation;
   String? eventName;
   List<String> stationList = [];
@@ -23,45 +25,48 @@ class _ChangeStationScreenState extends State<ChangeStationScreen> {
   }
 
   Future<void> _loadEventAndStations() async {
-    final prefs = await SharedPreferences.getInstance();
+    try {
+      final savedEventName = _prefs.selectedEvent;
+      final savedSelectedStation = _prefs.selectedAidStation;
+      
+      // Fetch event details filtered by the saved event name if it exists
+      final currentEventAidStations = await _networkManager.fetchEventDetails(eventName: savedEventName);
 
-    eventName = prefs.getString("eventName");
-    selectedStation = prefs.getString("selectedAid");
+      String? matchedEvent;
+      List<String> stations = [];
 
-    final allEventsMap = await NetworkManager().fetchEventDetails();
+      if (currentEventAidStations.isNotEmpty) {
+        matchedEvent = currentEventAidStations.keys.first;
+        stations = currentEventAidStations[matchedEvent] ?? [];
+      }
 
-    // Match event safely
-    String? matchedEvent;
-    if (eventName != null) {
-      for (final key in allEventsMap.keys) {
-        if (key.toLowerCase().trim() == eventName!.toLowerCase().trim()) {
-          matchedEvent = key;
-          break;
-        }
+      // Validate selected station is in the new list
+      String? validatedSelectedStation;
+      if (stations.contains(savedSelectedStation)) {
+        validatedSelectedStation = savedSelectedStation;
+      }
+
+      setState(() {
+        eventName = matchedEvent;
+        stationList = stations;
+        selectedStation = validatedSelectedStation;
+        loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        loading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading event details: $e')),
+        );
       }
     }
-
-    matchedEvent ??= allEventsMap.keys.isNotEmpty ? allEventsMap.keys.first : null;
-
-    if (matchedEvent != null) {
-      stationList = allEventsMap[matchedEvent] ?? [];
-    }
-
-    if (!stationList.contains(selectedStation)) {
-      selectedStation = null;
-    }
-
-    setState(() {
-      eventName = matchedEvent;
-      loading = false;
-    });
   }
 
   Future<void> _goToLiveEntry() async {
   if (selectedStation == null) return;
-
-  final prefs = await SharedPreferences.getInstance();
-  prefs.setString("selectedAid", selectedStation!);
+  _prefs.selectedAidStation = selectedStation!;
 
   if (!mounted) return;
 

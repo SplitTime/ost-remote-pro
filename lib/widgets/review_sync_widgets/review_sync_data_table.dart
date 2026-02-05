@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 class ReviewSyncDataTable extends StatefulWidget {
   final String sortBy;
-  const ReviewSyncDataTable({super.key, required this.sortBy});
+  final List<Map<String, dynamic>>? data;
+  const ReviewSyncDataTable({super.key, required this.sortBy, this.data});
 
   @override
   State<ReviewSyncDataTable> createState() => _ReviewSyncDataTableState();
@@ -10,12 +11,14 @@ class ReviewSyncDataTable extends StatefulWidget {
 
 class _ReviewSyncDataTableState extends State<ReviewSyncDataTable> {
   late List<Map<String, dynamic>> _data;
+  late Map<String, List<Map<String, dynamic>>> _groupedData;
 
   @override
   void initState() {
     super.initState();
-    _data = _fetchData();
+    _data = widget.data != null ? List<Map<String, dynamic>>.from(widget.data!) : _fetchData();
     _sortData();
+    _groupData();
   }
 
   @override
@@ -23,7 +26,14 @@ class _ReviewSyncDataTableState extends State<ReviewSyncDataTable> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.sortBy != widget.sortBy) {
       _sortData();
+      _groupData();
       setState(() {}); // trigger rebuild
+    }
+    if (oldWidget.data != widget.data && widget.data != null) {
+      _data = List<Map<String, dynamic>>.from(widget.data!);
+      _sortData();
+      _groupData();
+      setState(() {});
     }
   }
 
@@ -54,50 +64,97 @@ class _ReviewSyncDataTableState extends State<ReviewSyncDataTable> {
     ];
   }
 
+  String _mapSortKey(String sortBy) {
+    switch (sortBy) {
+      case 'Bib':
+      case 'Bib #':
+        return 'Bib #';
+      case 'Time Displayed':
+      case 'Time Entered':
+      case 'Time':
+        return 'Time';
+      case 'Name':
+      default:
+        return 'Name';
+    }
+  }
+
   void _sortData() {
-    _data.sort((a, b) =>
-        a[widget.sortBy].toString().compareTo(b[widget.sortBy].toString()));
+    final key = _mapSortKey(widget.sortBy);
+    _data.sort((a, b) => a[key].toString().compareTo(b[key].toString()));
+  }
+
+  void _groupData() {
+    _groupedData = {};
+    for (var row in _data) {
+      final aidStation = row['AidStation']?.toString() ?? 'Unknown';
+      if (!_groupedData.containsKey(aidStation)) {
+        _groupedData[aidStation] = [];
+      }
+      _groupedData[aidStation]!.add(row);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: SingleChildScrollView(
-        child: Table(
-          columnWidths: const {
-            0: FlexColumnWidth(1),
-            1: FlexColumnWidth(3),
-            2: FlexColumnWidth(1),
-            3: FlexColumnWidth(2),
-          },
-          border: const TableBorder(
-            top: BorderSide(width: 0.5, color: Colors.grey),
-            bottom: BorderSide(width: 0.5, color: Colors.grey),
-            horizontalInside: BorderSide(width: 0.5, color: Colors.grey),
-          ),
-          children: _data.map((row) {
-            final textColor =
-                row['Synced'] == true ? Colors.green[700]! : Colors.black;
-            return TableRow(
+        child: Column(
+          children: _groupedData.entries.map((entry) {
+            final aidStation = entry.key;
+            final rows = entry.value;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(row['Bib #'].toString(),
-                        style: TextStyle(color: textColor))),
-                Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(row['Name'].toString(),
-                        style: TextStyle(color: textColor))),
-                Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(row['In/Out'].toString(),
-                        style: TextStyle(color: textColor))),
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(row['Time'].toString(),
-                          style: TextStyle(color: textColor))),
+                  padding: const EdgeInsets.fromLTRB(8, 16, 8, 8),
+                  child: Text(
+                    aidStation,
+                    style: const TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                Table(
+                  columnWidths: const {
+                    0: FlexColumnWidth(1),
+                    1: FlexColumnWidth(3),
+                    2: FlexColumnWidth(1),
+                    3: FlexColumnWidth(2),
+                  },
+                  border: const TableBorder(
+                    top: BorderSide(width: 0.5, color: Colors.grey),
+                    bottom: BorderSide(width: 0.5, color: Colors.grey),
+                    horizontalInside: BorderSide(width: 0.5, color: Colors.grey),
+                  ),
+                  children: rows.map((row) {
+                    final textColor = row['Synced'] == true
+                        ? Colors.green[700]!
+                        : Colors.black;
+                    return TableRow(
+                      children: [
+                        Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Text(row['Bib #'].toString(),
+                                style: TextStyle(color: textColor))),
+                        Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Text(row['Name'].toString(),
+                                style: TextStyle(color: textColor))),
+                        Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Text(row['In/Out'].toString(),
+                                style: TextStyle(color: textColor))),
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Text(row['Time'].toString(),
+                                  style: TextStyle(color: textColor))),
+                        ),
+                      ],
+                    );
+                  }).toList(),
                 ),
               ],
             );
