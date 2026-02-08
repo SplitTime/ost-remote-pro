@@ -33,7 +33,7 @@ class PreferencesService {
 
   // Cached Aid Station Names
   List<String> get aidStationsForSelectedEvent => _prefs.getStringList('selected_event_aid_stations') ?? [];
-  set aidStationsForSelectedEvent(List<String> value) => _prefs.setStringList('se_aid_stations', value);
+  set aidStationsForSelectedEvent(List<String> value) => _prefs.setStringList('selected_event_aid_stations', value);
 
   // Cached Participant Information, easier to store on disk like this than map. Map can be easily rederived from simple JSON strings
   List<String> get participantInfoForSelectedEvent => _prefs.getStringList('selected_event_participant_information') ?? [];
