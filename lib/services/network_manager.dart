@@ -247,6 +247,55 @@ class NetworkManager {
     return {};
   }
 
+  /// Fetch full event details (efforts + events) for refresh data.
+  /// Falls back to efforts-only if the server rejects the rich query.
+  Future<Map<String, dynamic>> getEventDetailsRaw({
+    required String eventSlug,
+  }) async {
+    final token = _prefs.token;
+    if (token == null) {
+      throw Exception('No authentication token found');
+    }
+
+    final headers = {
+      'Authorization': token,
+      'Accept': 'application/json',
+    };
+
+    // Attempt 1: efforts + events
+    final uri1 = Uri.parse(
+      '${_baseUrl}api/v1/events/$eventSlug'
+      '?include=efforts,events'
+      '&fields[efforts]=fullName,bibNumber'
+      '&fields[events]=shortName,parameterizedSplitNames',
+    );
+
+    final res1 = await http.get(uri1, headers: headers);
+    if (res1.statusCode == 200) {
+      return jsonDecode(res1.body) as Map<String, dynamic>;
+    }
+
+    // Attempt 2: efforts only
+    final uri2 = Uri.parse(
+      '${_baseUrl}api/v1/events/$eventSlug'
+      '?include=efforts'
+      '&fields[efforts]=fullName,bibNumber',
+    );
+    final res2 = await http.get(uri2, headers: headers);
+    if (res2.statusCode == 200) {
+      return jsonDecode(res2.body) as Map<String, dynamic>;
+    }
+
+    if (res2.statusCode == 401 || res1.statusCode == 401) {
+      throw Exception('Authentication failed. Please log in again.');
+    }
+
+    throw Exception(
+      'Failed to load event details for "$eventSlug" '
+      '(status ${res2.statusCode}): ${res2.body}',
+    );
+  }
+
   Future<bool> syncEntries(String eventSlug, Map<String, dynamic> entriesPayload) async {
     final token = _prefs.token;
     if (token == null) {

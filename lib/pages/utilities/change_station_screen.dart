@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../services/network_manager.dart';
 import 'package:open_split_time_v2/services/preferences_service.dart';
 
 class ChangeStationScreen extends StatefulWidget {
@@ -10,7 +9,6 @@ class ChangeStationScreen extends StatefulWidget {
 }
 
 class _ChangeStationScreenState extends State<ChangeStationScreen> {
-  final NetworkManager _networkManager = NetworkManager();
   final PreferencesService _prefs = PreferencesService();
   String? selectedStation;
   String? eventName;
@@ -24,44 +22,22 @@ class _ChangeStationScreenState extends State<ChangeStationScreen> {
     _loadEventAndStations();
   }
 
-  Future<void> _loadEventAndStations() async {
-    try {
-      final savedEventName = _prefs.selectedEvent;
-      final savedSelectedStation = _prefs.selectedAidStation;
-      
-      // Fetch event details filtered by the saved event name if it exists
-      final currentEventAidStations = await _networkManager.fetchEventDetails(eventName: savedEventName);
+  void _loadEventAndStations() {
+    final savedEventName = _prefs.selectedEvent;
+    final savedSelectedStation = _prefs.selectedAidStation;
+    final cachedStations = _prefs.aidStationsForSelectedEvent;
 
-      String? matchedEvent;
-      List<String> stations = [];
-
-      if (currentEventAidStations.isNotEmpty) {
-        matchedEvent = currentEventAidStations.keys.first;
-        stations = currentEventAidStations[matchedEvent] ?? [];
-      }
-
-      // Validate selected station is in the new list
-      String? validatedSelectedStation;
-      if (stations.contains(savedSelectedStation)) {
-        validatedSelectedStation = savedSelectedStation;
-      }
-
-      setState(() {
-        eventName = matchedEvent;
-        stationList = stations;
-        selectedStation = validatedSelectedStation;
-        loading = false;
-      });
-    } catch (e) {
-      setState(() {
-        loading = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading event details: $e')),
-        );
-      }
+    String? validatedSelectedStation;
+    if (cachedStations.contains(savedSelectedStation)) {
+      validatedSelectedStation = savedSelectedStation;
     }
+
+    setState(() {
+      eventName = savedEventName.isNotEmpty ? savedEventName : null;
+      stationList = cachedStations;
+      selectedStation = validatedSelectedStation;
+      loading = false;
+    });
   }
 
   Future<void> _goToLiveEntry() async {

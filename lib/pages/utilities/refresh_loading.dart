@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:open_split_time_v2/services/preferences_service.dart';
+import 'package:open_split_time_v2/pages/utilities/refresh_error.dart';
 import 'package:open_split_time_v2/pages/utilities/refresh_success.dart';
+import 'package:open_split_time_v2/services/network_manager.dart';
+import 'package:open_split_time_v2/services/preferences_service.dart';
+import 'package:open_split_time_v2/pages/utilities/refresh_data_service.dart';
 
 class RefreshLoadingScreen extends StatefulWidget {
   const RefreshLoadingScreen({super.key});
@@ -12,33 +15,54 @@ class RefreshLoadingScreen extends StatefulWidget {
 class _RefreshLoadingScreenState extends State<RefreshLoadingScreen> {
   double progress = 0.0;
 
+  final PreferencesService _prefs = PreferencesService();
+  final RefreshDataService _refreshService =
+      RefreshDataService(network: NetworkManager());
+
   @override
   void initState() {
     super.initState();
-    _startProgress();
+    _runRefresh();
   }
 
-  Future<void> _startProgress() async {
+  Future<void> _runRefresh() async {
+    setState(() => progress = 0.1);
 
-    final PreferencesService _prefs = PreferencesService();
-    // Animate progress bar over 2 seconds
-    for (int i = 0; i <= 100; i++) {
-      await Future.delayed(const Duration(milliseconds: 20));
-      setState(() {
-        progress = i / 100;
-      });
-    }
+    final eventSlug = _prefs.selectedEventSlug;
 
-    // After animation, go to success page
-    int refreshSuccess = await _prefs.refreshParticipantData();
-    if(refreshSuccess == 0){
-      // Handle failure case if needed don't have a page for that yet
-    }
-    else if(refreshSuccess == 1) {
+    if (eventSlug.isEmpty) {
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const RefreshSuccessScreen()),
+        MaterialPageRoute(
+          builder: (_) => const RefreshErrorScreen(
+            message:
+                'No event is selected yet. Go to Live Entry once, then run Refresh Data again.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    try {
+      await _refreshService.refreshEventData(
+        eventSlug: eventSlug,
+        onProgress: (p) {
+          if (!mounted) return;
+          setState(() => progress = p);
+        },
+      );
+
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const RefreshSuccessScreen()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => RefreshErrorScreen(message: e.toString())),
       );
     }
   }
@@ -51,14 +75,8 @@ class _RefreshLoadingScreenState extends State<RefreshLoadingScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Spacer(),
-
-          Image.asset(
-            "assets/images/ost_logo.jpg",
-            height: 130,
-            //color: Colors.white,
-          ),
+          Image.asset("assets/images/ost_logo.jpg", height: 130),
           const SizedBox(height: 20),
-
           const Text(
             "OST Remote",
             style: TextStyle(
@@ -67,20 +85,16 @@ class _RefreshLoadingScreenState extends State<RefreshLoadingScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
-
           const Spacer(),
-
-          // ANIMATED PROGRESS BAR
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40.0),
             child: LinearProgressIndicator(
-              value: progress,
+              value: progress <= 0 ? null : progress,
               backgroundColor: Colors.white.withOpacity(0.3),
               valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
               minHeight: 6,
             ),
           ),
-
           const SizedBox(height: 60),
         ],
       ),

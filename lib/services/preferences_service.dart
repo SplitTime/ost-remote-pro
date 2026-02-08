@@ -138,5 +138,78 @@ class PreferencesService {
       return 0; // On error, return 0
     }
   }
-  
+
+  // --- Refresh cache properties (keyed by event slug) ---
+
+  String _refreshKey(String suffix) => 'refresh:$selectedEventSlug:$suffix';
+
+  String? get refreshDataEntryGroups => _prefs.getString(_refreshKey('dataEntryGroups'));
+  set refreshDataEntryGroups(String? value) {
+    if (value == null) {
+      _prefs.remove(_refreshKey('dataEntryGroups'));
+    } else {
+      _prefs.setString(_refreshKey('dataEntryGroups'), value);
+    }
+  }
+
+  bool? get refreshMonitorPacers {
+    final key = _refreshKey('monitorPacers');
+    if (_prefs.containsKey(key)) return _prefs.getBool(key);
+    return null;
+  }
+  set refreshMonitorPacers(bool? value) {
+    if (value == null) {
+      _prefs.remove(_refreshKey('monitorPacers'));
+    } else {
+      _prefs.setBool(_refreshKey('monitorPacers'), value);
+    }
+  }
+
+  String? get refreshMonitorPacersJson => _prefs.getString(_refreshKey('monitorPacersJson'));
+  set refreshMonitorPacersJson(String? value) {
+    if (value == null) {
+      _prefs.remove(_refreshKey('monitorPacersJson'));
+    } else {
+      _prefs.setString(_refreshKey('monitorPacersJson'), value);
+    }
+  }
+
+  List<String> get refreshSplitNames => _prefs.getStringList(_refreshKey('splitNames')) ?? [];
+  set refreshSplitNames(List<String> value) => _prefs.setStringList(_refreshKey('splitNames'), value);
+
+  String? get refreshBibToName => _prefs.getString(_refreshKey('bibToName'));
+  set refreshBibToName(String? value) {
+    if (value == null) {
+      _prefs.remove(_refreshKey('bibToName'));
+    } else {
+      _prefs.setString(_refreshKey('bibToName'), value);
+    }
+  }
+
+  String? get refreshEventIdsAndSplits => _prefs.getString(_refreshKey('eventIdsAndSplits'));
+  set refreshEventIdsAndSplits(String? value) {
+    if (value == null) {
+      _prefs.remove(_refreshKey('eventIdsAndSplits'));
+    } else {
+      _prefs.setString(_refreshKey('eventIdsAndSplits'), value);
+    }
+  }
+
+  String? get refreshEventShortNames => _prefs.getString(_refreshKey('eventShortNames'));
+  set refreshEventShortNames(String? value) {
+    if (value == null) {
+      _prefs.remove(_refreshKey('eventShortNames'));
+    } else {
+      _prefs.setString(_refreshKey('eventShortNames'), value);
+    }
+  }
+
+  int? get lastRefreshEpochMs => _prefs.getInt(_refreshKey('lastRefreshEpochMs'));
+  set lastRefreshEpochMs(int? value) {
+    if (value == null) {
+      _prefs.remove(_refreshKey('lastRefreshEpochMs'));
+    } else {
+      _prefs.setInt(_refreshKey('lastRefreshEpochMs'), value);
+    }
+  }
 }
