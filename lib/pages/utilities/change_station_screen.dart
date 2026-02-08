@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/network_manager.dart';
+import '../../services/network_manager.dart';
 import 'package:open_split_time_v2/services/preferences_service.dart';
 
 class ChangeStationScreen extends StatefulWidget {

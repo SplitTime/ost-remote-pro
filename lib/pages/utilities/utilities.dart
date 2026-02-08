@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/pages/login.dart';
-import 'package:open_split_time_v2/pages/about_screen.dart';
-import 'package:open_split_time_v2/pages/refresh_loading.dart';
-import 'package:open_split_time_v2/pages/change_station_screen.dart';
+import 'package:open_split_time_v2/pages/utilities/about_screen.dart';
+import 'package:open_split_time_v2/pages/utilities/refresh_loading.dart';
+import 'package:open_split_time_v2/pages/utilities/change_station_screen.dart';
 
 class UtilitiesPage extends StatelessWidget {
   const UtilitiesPage({super.key});
