@@ -5,6 +5,7 @@ import 'package:open_split_time_v2/pages/review_sync.dart';
 import 'package:open_split_time_v2/pages/event_select.dart';
 import 'package:open_split_time_v2/services/preferences_service.dart';
 import 'package:open_split_time_v2/pages/utilities/utilities.dart';
+import 'package:open_split_time_v2/pages/crosscheck/cross_check.dart';
 
 
 void main() async{
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
         '/liveEntry': (context) => const LiveEntryScreen(),
         '/ReviewSync': (context) => const ReviewSyncPage(),
         '/eventSelect': (context) => const EventSelect(),
+        '/CrossCheck': (context) => const CrossCheckPage(),
         '/Utilities': (context) => const UtilitiesPage(),
       },
     );

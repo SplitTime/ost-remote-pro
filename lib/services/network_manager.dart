@@ -296,6 +296,46 @@ class NetworkManager {
     );
   }
 
+      /// Best-effort. If the endpoint is wrong/not supported, return null. Once you confirm the actual API route, adjust here.
+  Future<Map<int, bool>?> fetchCrossCheckFlags({
+    required String eventSlug,
+    required String splitName,
+  }) async {
+    final token = await getToken();
+    if (token == null) return null;
+
+    try {
+      // GUESS: you may need to change this endpoint once confirmed.
+      final uri = Uri.parse(
+        '${_baseUrl}api/v1/events/$eventSlug/cross_check?split_name=$splitName',
+      );
+
+      final response = await http.get(uri, headers: {
+        'Authorization': token,
+        'Accept': 'application/json',
+      });
+
+      if (response.statusCode != 200) return null;
+
+      final data = jsonDecode(response.body);
+
+      // EXPECTED FORMAT (example):
+      // { "not_expected_bibs": [1,2,3] }
+      if (data is Map && data['not_expected_bibs'] is List) {
+        final out = <int, bool>{};
+        for (final v in (data['not_expected_bibs'] as List)) {
+          final bib = v is int ? v : int.tryParse(v.toString());
+          if (bib != null) out[bib] = true;
+        }
+        return out;
+      }
+
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<bool> syncEntries(String eventSlug, Map<String, dynamic> entriesPayload) async {
     final token = _prefs.token;
     if (token == null) {

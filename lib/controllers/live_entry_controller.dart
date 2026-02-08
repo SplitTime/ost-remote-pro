@@ -6,6 +6,7 @@ import 'package:open_split_time_v2/services/preferences_service.dart';
 // Utils
 import 'dart:developer' as developer;
 import 'package:open_split_time_v2/services/network_manager.dart';
+import 'package:open_split_time_v2/services/crosscheck/raw_time_store.dart';
 import 'package:open_split_time_v2/utils/time_utils.dart';
 
 class LiveEntryController extends ChangeNotifier {
@@ -158,13 +159,14 @@ class LiveEntryController extends ChangeNotifier {
           name: 'LiveEntryController');
       return;
     }
+    final enteredTime = TimeUtils.formatEnteredTimeLocal();
     final json = {
       'type': 'raw_time',
       'attributes': {
         'source': source,
         'sub_split_kind': inOut,
         'with_pacer': _hasPacer.toString(),
-        'entered_time': TimeUtils.formatEnteredTimeLocal(),
+        'entered_time': enteredTime,
         'split_name': aidStation,
         'bib_number': _bibNumber,
         'stopped_here': (!_isContinuing).toString(),
@@ -179,6 +181,16 @@ class LiveEntryController extends ChangeNotifier {
 
     // Record the data in the backend, wait for networkManager to send the data
     appendEntry(json);
+
+    // Also store in RawTimeStore for Cross Check
+    RawTimeStore.add(RawTimeEntry(
+      eventSlug: _eventSlug,
+      splitName: _aidStation,
+      bibNumber: int.parse(_bibNumber),
+      subSplitKind: inOut,
+      stoppedHere: !_isContinuing,
+      enteredTime: enteredTime,
+    ));
   }
 
   void appendEntry(newEntryJson) async {
