@@ -50,12 +50,7 @@ class _ChangeStationScreenState extends State<ChangeStationScreen> {
 
   Navigator.pushNamed(
     context,
-    '/liveEntry',
-    arguments: {
-      'event': eventName ?? 'Unknown Event',
-      'aidStation': selectedStation!,
-      'eventSlug': (eventName ?? 'unknown-event').toLowerCase().replaceAll(" ", "-"),
-    },
+    '/liveEntry'
   );
 }
 
