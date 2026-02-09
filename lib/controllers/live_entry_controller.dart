@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:open_split_time_v2/services/preferences_service.dart';
 
 // Utils
 import 'dart:developer' as developer;
@@ -7,7 +10,9 @@ import 'package:open_split_time_v2/utils/time_utils.dart';
 
 class LiveEntryController extends ChangeNotifier {
   // States for the live entry screen
-  final NetworkManager _networkManager;
+  final NetworkManager _networkManager; // Not being used for now, only here because there's an import at the bottom that requires it for perhaps testing purposes
+
+  final _prefs = PreferencesService();
 
   Map<int, Map<String, String>> _bibNumberToAtheleteInfo = {};
 
@@ -100,9 +105,7 @@ class LiveEntryController extends ChangeNotifier {
   // load participants
   Future<void> loadParticipants() async {
     try {
-      final participants =
-          await _networkManager.fetchParticipantNames(eventName: eventSlug);
-      _bibNumberToAtheleteInfo = participants;
+      _bibNumberToAtheleteInfo = _prefs.bibNumberToAtheleteInfoForGivenEvent;
       notifyListeners();
     } catch (e) {
       developer.log('Error loading participants: $e',
@@ -120,7 +123,9 @@ class LiveEntryController extends ChangeNotifier {
         updateAthleteGender(_bibNumberToAtheleteInfo[bib]?['gender'] ?? '');
         final city = _bibNumberToAtheleteInfo[bib]?['city'] ?? '';
         final state = _bibNumberToAtheleteInfo[bib]?['stateCode'] ?? '';
-        final origin = '$city${city.isNotEmpty && state.isNotEmpty ? ', ' : ''}$state'.trim();
+        final origin =
+            '$city${city.isNotEmpty && state.isNotEmpty ? ', ' : ''}$state'
+                .trim();
         updateAthleteOrigin(origin);
       } catch (e) {
         updateAthleteName('');
@@ -153,27 +158,41 @@ class LiveEntryController extends ChangeNotifier {
           name: 'LiveEntryController');
       return;
     }
-
     final json = {
-      'data': [
-        {
-          'type': 'raw_time',
-          'attributes': {
-            'source': source,
-            'sub_split_kind': inOut,
-            'with_pacer': _hasPacer.toString(),
-            'entered_time': TimeUtils.formatEnteredTimeLocal(),
-            'split_name': aidStation,
-            'bib_number': _bibNumber,
-            'stopped_here': (!_isContinuing).toString(),
-          }
-        }
-      ]
+      'type': 'raw_time',
+      'attributes': {
+        'source': source,
+        'sub_split_kind': inOut,
+        'with_pacer': _hasPacer.toString(),
+        'entered_time': TimeUtils.formatEnteredTimeLocal(),
+        'split_name': aidStation,
+        'bib_number': _bibNumber,
+        'stopped_here': (!_isContinuing).toString(),
+      },
+      'meta': {
+        'synced': false,
+      },
     };
 
     // Log the JSON being sent
     developer.log('Submitting time entry: $json', name: 'LiveEntryScreen');
 
-    // TODO: Record the data in the backend, wait for networkManager to send the data
+    // Record the data in the backend, wait for networkManager to send the data
+    appendEntry(json);
+  }
+
+  void appendEntry(newEntryJson) async {
+    // Get SharedPreferences instance
+    // TODO: Replace with PreferencesService
+
+    // Get existing list OR create a new empty list
+    final storedJson = _prefs.rawTimes;
+    List<dynamic> list = storedJson != null ? jsonDecode(storedJson) : [];
+
+    // Add the new entry
+    list.add(newEntryJson);
+
+    // Save updated list
+    _prefs.rawTimes = jsonEncode(list);
   }
 }

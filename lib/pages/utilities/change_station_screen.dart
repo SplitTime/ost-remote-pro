@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../services/network_manager.dart';
+import 'package:open_split_time_v2/services/preferences_service.dart';
 
 class ChangeStationScreen extends StatefulWidget {
   const ChangeStationScreen({super.key});
@@ -10,6 +9,7 @@ class ChangeStationScreen extends StatefulWidget {
 }
 
 class _ChangeStationScreenState extends State<ChangeStationScreen> {
+  final PreferencesService _prefs = PreferencesService();
   String? selectedStation;
   String? eventName;
   List<String> stationList = [];
@@ -22,46 +22,27 @@ class _ChangeStationScreenState extends State<ChangeStationScreen> {
     _loadEventAndStations();
   }
 
-  Future<void> _loadEventAndStations() async {
-    final prefs = await SharedPreferences.getInstance();
+  void _loadEventAndStations() {
+    final savedEventName = _prefs.selectedEvent;
+    final savedSelectedStation = _prefs.selectedAidStation;
+    final cachedStations = _prefs.aidStationsForSelectedEvent;
 
-    eventName = prefs.getString("eventName");
-    selectedStation = prefs.getString("selectedAid");
-
-    final allEventsMap = await NetworkManager().fetchEventDetails();
-
-    // Match event safely
-    String? matchedEvent;
-    if (eventName != null) {
-      for (final key in allEventsMap.keys) {
-        if (key.toLowerCase().trim() == eventName!.toLowerCase().trim()) {
-          matchedEvent = key;
-          break;
-        }
-      }
-    }
-
-    matchedEvent ??= allEventsMap.keys.isNotEmpty ? allEventsMap.keys.first : null;
-
-    if (matchedEvent != null) {
-      stationList = allEventsMap[matchedEvent] ?? [];
-    }
-
-    if (!stationList.contains(selectedStation)) {
-      selectedStation = null;
+    String? validatedSelectedStation;
+    if (cachedStations.contains(savedSelectedStation)) {
+      validatedSelectedStation = savedSelectedStation;
     }
 
     setState(() {
-      eventName = matchedEvent;
+      eventName = savedEventName.isNotEmpty ? savedEventName : null;
+      stationList = cachedStations;
+      selectedStation = validatedSelectedStation;
       loading = false;
     });
   }
 
   Future<void> _goToLiveEntry() async {
   if (selectedStation == null) return;
-
-  final prefs = await SharedPreferences.getInstance();
-  prefs.setString("selectedAid", selectedStation!);
+  _prefs.selectedAidStation = selectedStation!;
 
   if (!mounted) return;
 

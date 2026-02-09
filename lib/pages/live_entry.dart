@@ -19,11 +19,13 @@ import 'package:open_split_time_v2/services/preferences_service.dart';
 class LiveEntryScreen extends StatefulWidget {
   const LiveEntryScreen({super.key});
 
+  static final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+
   @override
   State<LiveEntryScreen> createState() => _LiveEntryScreenState();
 }
 
-class _LiveEntryScreenState extends State<LiveEntryScreen> {
+class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
   final LiveEntryController _controller = LiveEntryController();
   final PreferencesService _prefs = PreferencesService();
 
@@ -63,6 +65,19 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    LiveEntryScreen.routeObserver.subscribe(this, ModalRoute.of(context)!);
+    _loadParticipants();
+  }
+
+  @override
+  void dispose() {
+    LiveEntryScreen.routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Called when this screen is shown again (e.g., when returning from refresh)
     _loadParticipants();
   }
 

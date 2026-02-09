@@ -4,7 +4,7 @@ import 'package:open_split_time_v2/pages/login.dart';
 import 'package:open_split_time_v2/pages/review_sync.dart';
 import 'package:open_split_time_v2/pages/event_select.dart';
 import 'package:open_split_time_v2/services/preferences_service.dart';
-import 'package:open_split_time_v2/pages/utilities.dart';
+import 'package:open_split_time_v2/pages/utilities/utilities.dart';
 
 
 void main() async{
@@ -25,6 +25,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const LoginPage(),
+      navigatorObservers: [LiveEntryScreen.routeObserver],
       routes: {
         '/liveEntry': (context) => const LiveEntryScreen(),
         '/ReviewSync': (context) => const ReviewSyncPage(),

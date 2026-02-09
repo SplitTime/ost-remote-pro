@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PageRouterDrawer extends StatelessWidget {
   const PageRouterDrawer({super.key});
@@ -19,8 +21,7 @@ class PageRouterDrawer extends StatelessWidget {
           ),
           ListTile(
             title: const Text('Live Entry'),
-            onTap: () {
-              Navigator.pop(context);
+            onTap: () async {
               Navigator.pushNamedAndRemoveUntil(
                 context,
                 '/eventSelect', // The route name for your EventSelect widget
@@ -30,7 +31,6 @@ class PageRouterDrawer extends StatelessWidget {
                 context,
                 '/liveEntry',
               );
-
               developer.log('Navigated to Live Entry',
                   name: 'PageRouterDrawer');
             },
