@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as developer;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:open_split_time_v2/services/preferences_service.dart';
 
 class PageRouterDrawer extends StatelessWidget {
   const PageRouterDrawer({super.key});
@@ -40,6 +39,22 @@ class PageRouterDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pop(context);
               Navigator.pushNamed(context, '/ReviewSync');
+            },
+          ),
+          ListTile(
+            title: const Text('Cross Check'),
+            onTap: () {
+              Navigator.pop(context);
+              final prefs = PreferencesService();
+              final eventSlug = prefs.selectedEventSlug;
+              final aidStation = prefs.selectedAidStation;
+
+              if (context.mounted) {
+                Navigator.pushNamed(context, '/CrossCheck', arguments: {
+                  'eventSlug': eventSlug,
+                  'aidStation': aidStation,
+                });
+              }
             },
           ),
           ListTile(
