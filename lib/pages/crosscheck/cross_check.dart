@@ -367,41 +367,45 @@ class _CrossCheckPageState extends State<CrossCheckPage> {
     return Scaffold(
       endDrawer: const PageRouterDrawer(),
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0.5,
         leading: TextButton(
           onPressed: () {
-            if (_bulkSelect) {
-              setState(() {
+            setState(() {
+              if (_bulkSelect) {
                 _bulkSelect = false;
                 _selected = {};
-              });
-            } else {
-              Navigator.pop(context);
-            }
+              } else {
+                _bulkSelect = true;
+              }
+            });
           },
           child: Text(
-            _bulkSelect ? 'Cancel' : 'Back',
-            style: const TextStyle(color: Colors.white),
-          ),
-        ),
-        leadingWidth: 80,
-        title: const Text('Cross Check'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _bulkSelect = !_bulkSelect;
-                _selected = {};
-              });
-            },
-            child: Text(
-              _bulkSelect ? 'Done' : 'Bulk Select',
-              style: const TextStyle(color: Colors.white),
+            _bulkSelect ? 'Cancel' : 'Bulk Select',
+            style: TextStyle(
+              color: _bulkSelect ? Colors.red : Colors.blue,
+              fontSize: 13,
             ),
           ),
+        ),
+        leadingWidth: 100,
+        centerTitle: true,
+        title: const Text(
+          'Cross Check',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
           Builder(
-            builder: (context) => IconButton(
-              icon: const Icon(Icons.menu),
+            builder: (context) => TextButton.icon(
               onPressed: () => Scaffold.of(context).openEndDrawer(),
+              icon: const Icon(Icons.menu, color: Colors.blue),
+              label: const Text(
+                'Menu',
+                style: TextStyle(color: Colors.blue),
+              ),
             ),
           ),
         ],
@@ -506,40 +510,59 @@ class _CrossCheckPageState extends State<CrossCheckPage> {
                               _showRunnerDetails(item);
                             }
                           },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: bg,
-                              borderRadius: BorderRadius.circular(10),
-                              border: item.isSelected
-                                  ? Border.all(
-                                      color: Colors.yellowAccent,
-                                      width: 3,
-                                    )
-                                  : null,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '${item.bib}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: (_bulkSelect && _selected.contains(item.bib))
+                                      ? bg.withValues(alpha: 0.5)
+                                      : bg,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '${item.bib}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      _statusLabel(item.status),
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.75),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (_bulkSelect && _selected.contains(item.bib))
+                                Positioned(
+                                  right: 4,
+                                  bottom: 4,
+                                  child: Container(
+                                    width: 22,
+                                    height: 22,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.blue,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.check,
+                                      color: Colors.white,
+                                      size: 14,
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  _statusLabel(item.status),
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.75),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            ],
                           ),
                         );
                       },
