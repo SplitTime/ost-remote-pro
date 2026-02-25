@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:open_split_time_v2/pages/utilities/about_screen.dart';
 import 'package:open_split_time_v2/pages/login.dart';
+import 'package:open_split_time_v2/services/preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Fake screens so no timers or API calls run
@@ -84,13 +85,14 @@ class TestUtilitiesWrapper extends StatelessWidget {
 }
 
 void main() {
-  setUp(() {
+  setUp(() async {
     SharedPreferences.setMockInitialValues({
       "authToken": "TEST",
       "eventName": "Demo",
       "selectedStation": "S1",
       "stationList": ["S1", "S2"],
     });
+    await PreferencesService().init();
   });
 
   testWidgets("Buttons render", (tester) async {
