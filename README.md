@@ -51,6 +51,50 @@ Follow the prompt and Flutter will compile the app and deploy it to the selected
 
 You should now be ready to develop and run this ost-remote-pro locally.
 
+## 6. Running Tests
+
+After completing setup (steps 1–4), you can run the test suite in two ways:
+
+### Option A — Custom test runner (recommended)
+
+A formatted test runner with a live progress bar and per-suite summary is available in `tool/run_tests.dart`:
+
+```
+dart tool/run_tests.dart
+```
+
+This runs all tests across `test/utils/`, `test/services/`, `test/controllers/`, `test/widgets/`, and `test/pages/`, and prints a pass/fail summary at the end.
+
+### Option B — Flutter's built-in test command
+
+To run the full test suite directly with Flutter:
+
+```
+flutter test
+```
+
+To run a specific test file:
+
+```
+flutter test test/widgets/numpad_test.dart
+```
+
+To run all tests inside a folder:
+
+```
+flutter test test/widgets/
+```
+
+### Test coverage at a glance
+
+| Folder | What is tested |
+|---|---|
+| `test/utils/` | `TimeUtils` — timestamp formatting and timezone offset |
+| `test/services/` | `PreferencesService`, `RawTimeStore`, `CrossCheckService` |
+| `test/controllers/` | `LiveEntryController` logic |
+| `test/widgets/` | `NumPad`, `TwoStateToggle`, `ClockWidget` UI behaviour |
+| `test/pages/` | Navigation and rendering for Login, Utilities, CrossCheck, ReviewSync, and LiveEntry pages |
+
 ## Expected errors
 1. Make sure to have all the pending/unavailable dependencies shown on running `flutter doctor` to be satisfied.
 2. If you see errors associated to developer settings on running `flutter run`, make sure to turn on the developer mode in the settings or run `start ms-settings:developers` to get redirected to the settings window.
