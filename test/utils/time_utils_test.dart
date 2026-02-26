@@ -52,5 +52,77 @@ void main() {
         expect(result1.substring(0, 10), result2.substring(0, 10));
       });
     });
+
+    group('field value ranges', () {
+      // Format: "2026-02-25 14:30:45+05:30"
+      //          0         1         2
+      //          0123456789012345678901234
+
+      test('hours portion is between 0 and 23', () {
+        final result = TimeUtils.formatEnteredTimeLocal();
+        final hours = int.parse(result.substring(11, 13));
+        expect(hours, inInclusiveRange(0, 23));
+      });
+
+      test('minutes portion is between 0 and 59', () {
+        final result = TimeUtils.formatEnteredTimeLocal();
+        final minutes = int.parse(result.substring(14, 16));
+        expect(minutes, inInclusiveRange(0, 59));
+      });
+
+      test('seconds portion is between 0 and 59', () {
+        final result = TimeUtils.formatEnteredTimeLocal();
+        final seconds = int.parse(result.substring(17, 19));
+        expect(seconds, inInclusiveRange(0, 59));
+      });
+
+      test('month portion is between 1 and 12', () {
+        final result = TimeUtils.formatEnteredTimeLocal();
+        final month = int.parse(result.substring(5, 7));
+        expect(month, inInclusiveRange(1, 12));
+      });
+
+      test('day portion is between 1 and 31', () {
+        final result = TimeUtils.formatEnteredTimeLocal();
+        final day = int.parse(result.substring(8, 10));
+        expect(day, inInclusiveRange(1, 31));
+      });
+
+      test('timezone sign is + or -', () {
+        final result = TimeUtils.formatEnteredTimeLocal();
+        final sign = result[19];
+        expect(['+', '-'], contains(sign));
+      });
+
+      test('timezone offset hours are between 0 and 14', () {
+        final result = TimeUtils.formatEnteredTimeLocal();
+        final offsetHours = int.parse(result.substring(20, 22));
+        expect(offsetHours, inInclusiveRange(0, 14));
+      });
+
+      test('timezone offset minutes are between 0 and 59', () {
+        final result = TimeUtils.formatEnteredTimeLocal();
+        final offsetMinutes = int.parse(result.substring(23, 25));
+        expect(offsetMinutes, inInclusiveRange(0, 59));
+      });
+
+      test('separator between date and time is a space', () {
+        final result = TimeUtils.formatEnteredTimeLocal();
+        expect(result[10], ' ');
+      });
+
+      test('date separators are dashes', () {
+        final result = TimeUtils.formatEnteredTimeLocal();
+        expect(result[4], '-');
+        expect(result[7], '-');
+      });
+
+      test('time separators are colons', () {
+        final result = TimeUtils.formatEnteredTimeLocal();
+        expect(result[13], ':');
+        expect(result[16], ':');
+        expect(result[22], ':');
+      });
+    });
   });
 }

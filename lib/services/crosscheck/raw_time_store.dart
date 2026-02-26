@@ -32,7 +32,7 @@ class RawTimeEntry {
       eventSlug: (j['eventSlug'] ?? '').toString(),
       splitName: (j['splitName'] ?? '').toString(),
       bibNumber: (j['bibNumber'] ?? 0) is int
-          ? (j['bibNumber'] as int)
+          ? ((j['bibNumber'] ?? 0) as int)
           : int.tryParse((j['bibNumber'] ?? '0').toString()) ?? 0,
       subSplitKind: (j['subSplitKind'] ?? '').toString(),
       stoppedHere: (j['stoppedHere'] ?? false) == true,

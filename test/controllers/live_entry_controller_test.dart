@@ -227,5 +227,43 @@ void main() {
       expect(controller.hasPacer, false);
     });
 
+    // --- Negative / edge case tests ---
+
+    test('stationControl with empty bib number throws FormatException', () {
+      // _bibNumber is '' by default; int.parse('') inside stationControl throws
+      expect(
+        () => controller.stationControl('in', 'device'),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('stationControl with non-numeric bib throws FormatException', () {
+      controller.updateBibNumber('abc');
+      expect(
+        () => controller.stationControl('in', 'device'),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('updateAthleteInfo with non-numeric bib clears all athlete fields gracefully', () {
+      controller.updateBibNumber('not-a-number');
+      controller.updateAthleteInfo(); // try-catch inside handles the FormatException
+      expect(controller.athleteName, '');
+      expect(controller.athleteAge, '');
+      expect(controller.athleteGender, '');
+      expect(controller.athleteOrigin, '');
+    });
+
+    test('updateBibNumber with whitespace string is stored as-is', () {
+      controller.updateBibNumber('   ');
+      expect(controller.bibNumber, '   ');
+    });
+
+    test('updateBibNumber with very long string is stored without truncation', () {
+      final longBib = '1' * 100;
+      controller.updateBibNumber(longBib);
+      expect(controller.bibNumber, longBib);
+    });
+
   });
 }

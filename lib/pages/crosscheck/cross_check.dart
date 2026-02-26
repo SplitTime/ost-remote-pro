@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/widgets/page_router.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
@@ -106,7 +107,7 @@ class _CrossCheckPageState extends State<CrossCheckPage> {
         }
       } catch (e) {
         // Silently fail - we'll still show any local entries
-        debugPrint('CrossCheck: Failed to fetch participants: $e');
+        developer.log('CrossCheck: Failed to fetch participants: $e', name: 'CrossCheckPage');
       }
     }
 
