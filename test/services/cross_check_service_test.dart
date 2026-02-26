@@ -188,6 +188,70 @@ void main() {
       expect(vm.items[1].bib, 20);
       expect(vm.items[2].bib, 30);
     });
+
+    test('bib recorded at a different split is expected at the queried split', () async {
+      // Bib 55 has a time entry at "Station 2", not "Station 1"
+      await RawTimeStore.add(RawTimeEntry(
+        eventSlug: 'test-event',
+        splitName: 'Station 2',
+        bibNumber: 55,
+        subSplitKind: 'in',
+        stoppedHere: false,
+        enteredTime: '2024-06-15 14:30:45+02:00',
+      ));
+
+      final vm = await service.build(
+        eventSlug: 'test-event',
+        splitName: 'Station 1',
+        selectedBibs: {},
+        bibMap: {55: 'Cross-split Runner'},
+      );
+
+      // Bib 55 appears in the grid (bib exists) but is expected at Station 1
+      expect(vm.items, hasLength(1));
+      expect(vm.items[0].bib, 55);
+      expect(vm.items[0].status, CrossCheckStatus.expected);
+    });
+
+    test('stopped status takes priority over recorded when bib has multiple entries', () async {
+      // Two entries for the same bib at the same split: first not stopped, second stopped
+      await RawTimeStore.add(RawTimeEntry(
+        eventSlug: 'test-event',
+        splitName: 'Station 1',
+        bibNumber: 77,
+        subSplitKind: 'in',
+        stoppedHere: false,
+        enteredTime: '2024-06-15 14:30:00+02:00',
+      ));
+      await RawTimeStore.add(RawTimeEntry(
+        eventSlug: 'test-event',
+        splitName: 'Station 1',
+        bibNumber: 77,
+        subSplitKind: 'out',
+        stoppedHere: true,
+        enteredTime: '2024-06-15 14:31:00+02:00',
+      ));
+
+      final vm = await service.build(
+        eventSlug: 'test-event',
+        splitName: 'Station 1',
+        selectedBibs: {},
+      );
+
+      expect(vm.items[0].bib, 77);
+      expect(vm.items[0].status, CrossCheckStatus.stopped);
+    });
+
+    test('build with empty bibMap and no store entries returns empty viewmodel', () async {
+      final vm = await service.build(
+        eventSlug: 'test-event',
+        splitName: 'Station 1',
+        selectedBibs: {},
+        bibMap: {},
+      );
+
+      expect(vm.items, isEmpty);
+    });
   });
 
   group('CrossCheckService.setSelectedToExpected', () {
@@ -237,6 +301,59 @@ void main() {
         bibMap: {10: 'A'},
       );
 
+      expect(vm.items[0].status, CrossCheckStatus.notExpected);
+    });
+
+    test('calling with empty set does not crash and changes nothing', () async {
+      // Pre-condition: bib 10 is expected
+      var vm = await service.build(
+        eventSlug: 'test-event',
+        splitName: 'Station 1',
+        selectedBibs: {},
+        bibMap: {10: 'A'},
+      );
+      expect(vm.items[0].status, CrossCheckStatus.expected);
+
+      // Empty-set call — should be a no-op
+      await service.setSelectedToNotExpected(
+        eventSlug: 'test-event',
+        splitName: 'Station 1',
+        selectedBibs: {},
+      );
+
+      vm = await service.build(
+        eventSlug: 'test-event',
+        splitName: 'Station 1',
+        selectedBibs: {},
+        bibMap: {10: 'A'},
+      );
+      expect(vm.items[0].status, CrossCheckStatus.expected);
+    });
+  });
+
+  group('CrossCheckService.setSelectedToExpected edge cases', () {
+    test('calling with empty set does not crash and changes nothing', () async {
+      // Mark bib 10 as not expected first
+      await service.setSelectedToNotExpected(
+        eventSlug: 'test-event',
+        splitName: 'Station 1',
+        selectedBibs: {10},
+      );
+
+      // Empty-set call — should be a no-op
+      await service.setSelectedToExpected(
+        eventSlug: 'test-event',
+        splitName: 'Station 1',
+        selectedBibs: {},
+      );
+
+      final vm = await service.build(
+        eventSlug: 'test-event',
+        splitName: 'Station 1',
+        selectedBibs: {},
+        bibMap: {10: 'A'},
+      );
+      // Bib 10 should still be notExpected since the empty call did nothing
       expect(vm.items[0].status, CrossCheckStatus.notExpected);
     });
   });

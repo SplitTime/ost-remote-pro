@@ -71,6 +71,21 @@ void main() {
       expect(entry.bibNumber, 0);
     });
 
+    test('fromJson with completely empty map uses all defaults', () {
+      final entry = RawTimeEntry.fromJson({});
+      expect(entry.eventSlug, '');
+      expect(entry.splitName, '');
+      expect(entry.bibNumber, 0);
+      expect(entry.subSplitKind, '');
+      expect(entry.stoppedHere, false);
+      expect(entry.enteredTime, '');
+    });
+
+    test('fromJson with null bibNumber field falls back to 0', () {
+      final entry = RawTimeEntry.fromJson({'bibNumber': null});
+      expect(entry.bibNumber, 0);
+    });
+
     test('roundtrip toJson -> fromJson preserves data', () {
       final original = RawTimeEntry(
         eventSlug: 'race-2024',
@@ -193,6 +208,40 @@ void main() {
       });
 
       final entries = await RawTimeStore.list('bad-event');
+      expect(entries, isEmpty);
+    });
+
+    test('list skips null and non-map items inside the JSON array', () async {
+      SharedPreferences.setMockInitialValues({
+        'rawTimes:mixed-event':
+            '[null, 42, "string", {"bibNumber": 7, "eventSlug": "mixed-event", "splitName": "S1", "subSplitKind": "in", "stoppedHere": false, "enteredTime": "2024-01-01 00:00:00+00:00"}]',
+      });
+
+      final entries = await RawTimeStore.list('mixed-event');
+      // Only the valid map entry should be parsed; nulls and primitives are skipped
+      expect(entries, hasLength(1));
+      expect(entries[0].bibNumber, 7);
+    });
+
+    test('adding the same bib twice appends both entries', () async {
+      final entry = RawTimeEntry(
+        eventSlug: 'test-event',
+        splitName: 'Station 1',
+        bibNumber: 42,
+        subSplitKind: 'in',
+        stoppedHere: false,
+        enteredTime: '2024-06-15 14:30:45+02:00',
+      );
+
+      await RawTimeStore.add(entry);
+      await RawTimeStore.add(entry);
+
+      final entries = await RawTimeStore.list('test-event');
+      expect(entries, hasLength(2));
+    });
+
+    test('listing an empty eventSlug returns empty list', () async {
+      final entries = await RawTimeStore.list('');
       expect(entries, isEmpty);
     });
   });

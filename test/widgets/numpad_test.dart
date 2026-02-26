@@ -111,5 +111,60 @@ void main() {
       expect(pressedDigits.toSet(), {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'});
       expect(pressedDigits, hasLength(10));
     });
+
+    // --- Negative / edge case tests ---
+
+    testWidgets('tapping backspace does NOT call onNumberPressed', (tester) async {
+      await tester.pumpWidget(buildTestNumPad());
+
+      await tester.tap(find.byIcon(Icons.backspace));
+      await tester.pump();
+
+      expect(pressedDigits, isEmpty);
+    });
+
+    testWidgets('tapping a number does NOT call onBackspace', (tester) async {
+      await tester.pumpWidget(buildTestNumPad());
+
+      await tester.tap(find.text('7'));
+      await tester.pump();
+
+      expect(backspaceCount, 0);
+    });
+
+    testWidgets('tapping * does NOT call onBackspace', (tester) async {
+      await tester.pumpWidget(buildTestNumPad());
+
+      await tester.tap(find.text('*'));
+      await tester.pump();
+
+      expect(backspaceCount, 0);
+    });
+
+    testWidgets('rapid successive taps on the same digit all register', (tester) async {
+      await tester.pumpWidget(buildTestNumPad());
+
+      for (var i = 0; i < 5; i++) {
+        await tester.tap(find.text('1'));
+      }
+      await tester.pump();
+
+      expect(pressedDigits, hasLength(5));
+      expect(pressedDigits, everyElement('1'));
+    });
+
+    testWidgets('alternating number and backspace taps fire correct callbacks each time',
+        (tester) async {
+      await tester.pumpWidget(buildTestNumPad());
+
+      await tester.tap(find.text('3'));
+      await tester.tap(find.byIcon(Icons.backspace));
+      await tester.tap(find.text('9'));
+      await tester.tap(find.byIcon(Icons.backspace));
+      await tester.pump();
+
+      expect(pressedDigits, ['3', '9']);
+      expect(backspaceCount, 2);
+    });
   });
 }

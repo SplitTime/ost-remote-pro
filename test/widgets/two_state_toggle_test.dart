@@ -117,5 +117,85 @@ void main() {
       expect(find.text('With Pacer'), findsOneWidget);
       expect(find.byType(Switch), findsNWidgets(2));
     });
+
+    // --- Negative / edge case tests ---
+
+    testWidgets('empty string label renders without error', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TwoStateToggle(
+              label: '',
+              value: false,
+              onChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+
+      // No exception — Switch still renders even with an empty label
+      expect(find.byType(Switch), findsOneWidget);
+    });
+
+    testWidgets('toggling from true to false calls onChanged with false', (tester) async {
+      bool? changedValue;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TwoStateToggle(
+              label: 'Test',
+              value: true,
+              onChanged: (val) => changedValue = val,
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byType(Switch));
+      await tester.pump();
+
+      expect(changedValue, false);
+    });
+
+    testWidgets('onChanged is not called before any user interaction', (tester) async {
+      bool called = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TwoStateToggle(
+              label: 'Test',
+              value: false,
+              onChanged: (_) => called = true,
+            ),
+          ),
+        ),
+      );
+
+      expect(called, false);
+    });
+
+    testWidgets('very long label renders without throwing', (tester) async {
+      const longLabel = 'This is a very long label that might cause a layout overflow in a tight space';
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: TwoStateToggle(
+                label: longLabel,
+                value: false,
+                onChanged: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Widget builds — Switch still present with a long label
+      expect(find.byType(Switch), findsOneWidget);
+    });
   });
 }
