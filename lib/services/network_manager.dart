@@ -7,6 +7,27 @@ class NetworkManager {
   static const _baseUrl = 'https://ost-stage.herokuapp.com/';
   final PreferencesService _prefs = PreferencesService();
 
+  Future<int> checkConnectivity() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${_baseUrl}'),
+      );
+      if(response.statusCode != 200) {
+        print("HERE!");
+        return 0;
+      } else {
+        _prefs.token = null;
+        _prefs.tokenExpiration = null;
+        _prefs.email = null;
+        print("here!");
+        return 1;
+      }
+    } catch (e) {
+      print('Connectivity check failed: $e');
+      return 0;
+    }
+  }
+
   Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
       Uri.parse('${_baseUrl}api/v1/auth'),
