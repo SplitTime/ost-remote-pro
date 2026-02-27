@@ -102,6 +102,77 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
     });
   }
 
+  /// Returns the appropriate button widget(s) based on the aid station
+  Widget _buildStationButtons() {
+    if (_controller.aidStation == "Start") {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _controller.stationControl('out', 'owens-laptop');
+                  _isStationPressed = true;
+                  _controller.updateBibNumber('');
+                });
+              },
+              child: const Text('Start'),
+            ),
+          ),
+        ],
+      );
+    } else if (_controller.aidStation == "Finish") {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _controller.stationControl('in', 'owens-laptop');
+                  _isStationPressed = true;
+                  _controller.updateBibNumber('');
+                });
+              },
+              child: const Text('Finish'),
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _controller.stationControl('in', 'owens-laptop');
+                  _isStationPressed = true;
+                  _controller.updateBibNumber('');
+                });
+              },
+              child: Text('${_controller.aidStation} in'),
+            ),
+          ),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _controller.stationControl('out', 'owens-laptop');
+                  _isStationPressed = true;
+                  _controller.updateBibNumber('');
+                });
+              },
+              child: Text('${_controller.aidStation} out'),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -201,31 +272,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
             const SizedBox(height: 10),
 
             // Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _controller.stationControl('in', 'owens-laptop');
-                      _isStationPressed = true;
-                      _controller.updateBibNumber('');
-                    });
-                  },
-                  child: Text('${_controller.aidStation} in'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _controller.stationControl('out', 'owens-laptop');
-                      _isStationPressed = true;
-                      _controller.updateBibNumber('');
-                    });
-                  },
-                  child: Text('${_controller.aidStation} out'),
-                ),
-              ],
-            ),
+            _buildStationButtons(),
 
             const SizedBox(height: 50),
             // Numpad
