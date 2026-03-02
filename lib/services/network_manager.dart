@@ -13,13 +13,11 @@ class NetworkManager {
         Uri.parse('${_baseUrl}'),
       );
       if(response.statusCode != 200) {
-        print("HERE!");
         return 0;
       } else {
         _prefs.token = null;
         _prefs.tokenExpiration = null;
         _prefs.email = null;
-        print("here!");
         return 1;
       }
     } catch (e) {

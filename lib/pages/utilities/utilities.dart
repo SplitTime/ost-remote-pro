@@ -116,7 +116,6 @@ class UtilitiesPage extends StatelessWidget {
                 onPressed: () async {
                   final networkManager = NetworkManager();
                   final isConnected = await networkManager.checkConnectivity();
-                  print("isconnected: ${isConnected}\n");
                   if(isConnected != 0) {
                     Navigator.pushReplacement(
                     context,
