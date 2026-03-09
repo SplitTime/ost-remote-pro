@@ -117,10 +117,11 @@ class UtilitiesPage extends StatelessWidget {
                   final networkManager = NetworkManager();
                   final isConnected = await networkManager.checkConnectivity();
                   if(isConnected != 0) {
-                    Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginPage()),
-                  );
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                      (route) => false, // Remove all previous routes
+                    );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
