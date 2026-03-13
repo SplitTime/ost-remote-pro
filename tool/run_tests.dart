@@ -23,6 +23,7 @@ const _testFiles = [
   'test/services/cross_check_service_test.dart',
   'test/controllers/live_entry_controller_test.dart',
   'test/pages/login_page_test.dart',
+  'test/pages/signup_page_test.dart',
   'test/widgets/numpad_test.dart',
   'test/widgets/two_state_toggle_test.dart',
   'test/widgets/clock_widget_test.dart',
@@ -70,11 +71,9 @@ final _knownIds     = <int>{};           // real (non-hidden) test IDs
 // ── Progress bar rendering ──────
 void _redraw() {
   if (_linesDrawn > 0) {
-    stdout.write('\x1B[${_linesDrawn}A');
-    for (var i = 0; i < _linesDrawn; i++) {
-      stdout.write('\x1B[2K\n');
-    }
-    stdout.write('\x1B[${_linesDrawn}A');
+    // \x1B[nF: cursor previous N lines (moves to col 1 — more reliable on Windows)
+    // \x1B[J:  erase from cursor to end of screen
+    stdout.write('\x1B[${_linesDrawn}F\x1B[J');
   }
 
   const barWidth = 50;

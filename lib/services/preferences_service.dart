@@ -15,8 +15,7 @@ class PreferencesService {
   }
 
   Future<void> clear(String key) async {
-    if(key == null || key.isEmpty) {
-      // Just clear everything in the event of an empty key, perhaps we could discuss if this should error
+    if (key.isEmpty) {
       await clearAll();
       return;
     }
@@ -89,6 +88,15 @@ class PreferencesService {
     }
   }
 
+  // Returns true if there is a valid, non-expired token
+  bool get isTokenValid {
+    final t = token;
+    final exp = tokenExpiration;
+    if (t == null || t.isEmpty) return false;
+    if (exp == null) return true; // token exists but no expiry stored — assume valid
+    return DateTime.now().isBefore(exp);
+  }
+
   // Token Expiration
   DateTime? get tokenExpiration {
     final timestamp = _prefs.getInt('token_expiration');
@@ -132,7 +140,6 @@ class PreferencesService {
     try {
       final List<String> participants = await networkManager.fetchParticipantDetailsForGivenEvent(eventSlug: selectedEventSlug);
       participantInfoForSelectedEvent = participants;
-      print(participantInfoForSelectedEvent);
       return 1; // Success
     } catch (e) {
       return 0; // On error, return 0

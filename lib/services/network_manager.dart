@@ -5,7 +5,64 @@ import 'package:open_split_time_v2/services/preferences_service.dart';
 
 class NetworkManager {
   static const _baseUrl = 'https://ost-stage.herokuapp.com/';
+  static const _timeout = Duration(seconds: 15);
   final PreferencesService _prefs = PreferencesService();
+
+  Future<void> signUp({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    final response = await http.post(
+      Uri.parse('${_baseUrl}api/v1/users'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'data': {
+          'type': 'users',
+          'attributes': {
+            'firstName': firstName,
+            'lastName': lastName,
+            'email': email,
+            'password': password,
+            'passwordConfirmation': passwordConfirmation,
+          },
+        },
+      }),
+    ).timeout(_timeout);
+
+    developer.log(
+      'Sign-up response (${response.statusCode}): ${response.body}',
+      name: 'NetworkManager.signUp',
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return;
+    } else {
+      String message;
+      try {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        final errors = body['errors'] ?? body['error'] ?? body['message'];
+        if (errors is Map) {
+          message = errors.entries
+              .map((e) => '${e.key}: ${e.value is List ? (e.value as List).join(", ") : e.value}')
+              .join('\n');
+        } else if (errors is List) {
+          message = errors.join(', ');
+        } else {
+          message = errors?.toString() ?? 'Sign-up failed (${response.statusCode}). Raw: ${response.body}';
+        }
+      } catch (_) {
+        final preview = response.body.length > 200 ? response.body.substring(0, 200) : response.body;
+        message = 'Sign-up failed (${response.statusCode}). Raw: $preview';
+      }
+      throw Exception(message);
+    }
+  }
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
@@ -18,7 +75,7 @@ class NetworkManager {
         'user[email]': email,
         'user[password]': password,
       },
-    );
+    ).timeout(_timeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -52,7 +109,7 @@ class NetworkManager {
           'Authorization': token,
           'Accept': 'application/json',
         },
-      );
+      ).timeout(_timeout);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['data'] != null) {
@@ -86,64 +143,69 @@ class NetworkManager {
       if (eventName != null) {
         url += '&filter[name]=$eventName';
       }
-      
+
       final response = await http.get(
         Uri.parse(url),
         headers: {
           'Authorization': token,
           'Accept': 'application/json',
         },
-      );
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        // Build a map of event name -> aid stations
         final Map<String, List<String>> eventAidStations = {};
-        
+
         if (data['data'] != null && data['data'] is List) {
-          for (var eventGroup in data['data']) {
-            if (eventGroup['attributes'] != null && 
-                eventGroup['attributes']['name'] != null) {
-              
-              final eventName = eventGroup['attributes']['name'].toString();
-              eventAidStations[eventName] = []; // Initialize with empty list by default
-              
-              // Check if we have events in relationships
-              if (eventGroup['relationships'] != null && 
-                  eventGroup['relationships']['events'] != null &&
-                  eventGroup['relationships']['events']['data'] is List) {
-                
-                final events = eventGroup['relationships']['events']['data'];
-                
-                for (var event in events) {
-                  try {
-                    if (event['id'] != null) {
-                      final eventId = event['id'].toString();
-                      final eventResponse = await http.get(
-                        Uri.parse('${_baseUrl}api/v1/events/$eventId'),
-                        headers: {
-                          'Authorization': token,
-                          'Accept': 'application/json',
-                        },
-                      );
-                      
-                      if (eventResponse.statusCode == 200) {
-                        final eventData = jsonDecode(eventResponse.body);
-                        if (eventData['data']?['attributes']?['splitNames'] is List) {
-                          eventAidStations[eventName] = 
-                            List<String>.from(eventData['data']['attributes']['splitNames']);
-                          break; // Use the first valid event's aid stations
-                        }
-                      }
-                    }
-                  } catch (e) {
-                    print('Error processing event: $e');
-                    continue;
-                  }
+          // Process all event groups in parallel
+          await Future.wait((data['data'] as List).map((eventGroup) async {
+            if (eventGroup['attributes'] == null ||
+                eventGroup['attributes']['name'] == null) {
+              return;
+            }
+
+            final groupName = eventGroup['attributes']['name'].toString();
+            eventAidStations[groupName] = [];
+
+            final eventsData = eventGroup['relationships']?['events']?['data'];
+            if (eventsData is! List) return;
+
+            final eventIds = eventsData
+                .where((e) => e['id'] != null)
+                .map((e) => e['id'].toString())
+                .toList();
+
+            if (eventIds.isEmpty) return;
+
+            // Fetch all events for this group in parallel, pick first with splitNames
+            final responses = await Future.wait(
+              eventIds.map((id) async {
+                try {
+                  return await http.get(
+                    Uri.parse('${_baseUrl}api/v1/events/$id'),
+                    headers: {
+                      'Authorization': token,
+                      'Accept': 'application/json',
+                    },
+                  ).timeout(_timeout);
+                } catch (e) {
+                  developer.log('Error fetching event $id: $e',
+                      name: 'NetworkManager.fetchEventDetails');
+                  return null;
                 }
+              }),
+            );
+
+            for (final res in responses) {
+              if (res == null || res.statusCode != 200) continue;
+              final eventData = jsonDecode(res.body);
+              if (eventData['data']?['attributes']?['splitNames'] is List) {
+                eventAidStations[groupName] =
+                    List<String>.from(eventData['data']['attributes']['splitNames']);
+                break;
               }
             }
-          }
+          }));
         }
         return eventAidStations;
       } else if (response.statusCode == 401) {
@@ -169,11 +231,11 @@ class NetworkManager {
           'Authorization': token,
           'Accept': 'application/json',
         },
-      );
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        
+
         List<String> participantInfo = [];
 
 
@@ -212,7 +274,7 @@ class NetworkManager {
           'Authorization': token,
           'Accept': 'application/json',
         },
-      );
+      ).timeout(_timeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -270,7 +332,7 @@ class NetworkManager {
       '&fields[events]=shortName,parameterizedSplitNames',
     );
 
-    final res1 = await http.get(uri1, headers: headers);
+    final res1 = await http.get(uri1, headers: headers).timeout(_timeout);
     if (res1.statusCode == 200) {
       return jsonDecode(res1.body) as Map<String, dynamic>;
     }
@@ -281,7 +343,7 @@ class NetworkManager {
       '?include=efforts'
       '&fields[efforts]=fullName,bibNumber',
     );
-    final res2 = await http.get(uri2, headers: headers);
+    final res2 = await http.get(uri2, headers: headers).timeout(_timeout);
     if (res2.statusCode == 200) {
       return jsonDecode(res2.body) as Map<String, dynamic>;
     }
@@ -313,7 +375,7 @@ class NetworkManager {
       final response = await http.get(uri, headers: {
         'Authorization': token,
         'Accept': 'application/json',
-      });
+      }).timeout(_timeout);
 
       if (response.statusCode != 200) return null;
 
@@ -350,7 +412,7 @@ class NetworkManager {
         'Accept': 'application/json',
       },
       body: jsonEncode(entriesPayload),
-    );
+    ).timeout(_timeout);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       developer.log(

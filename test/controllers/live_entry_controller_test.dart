@@ -1,19 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart';
 import 'package:open_split_time_v2/controllers/live_entry_controller.dart';
-import 'package:open_split_time_v2/services/network_manager.dart';
-
-// Create a mock class for NetworkManager
-class MockNetworkManager extends Mock implements NetworkManager {}
 
 void main() {
   group('LiveEntryController', () {
     late LiveEntryController controller;
-    late MockNetworkManager mockNetworkManager;
 
     setUp(() {
-      mockNetworkManager = MockNetworkManager();
-      controller = LiveEntryController(networkManager: mockNetworkManager);
+      controller = LiveEntryController();
     });
 
     test('should initialize with default values', () {

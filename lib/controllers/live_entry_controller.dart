@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:open_split_time_v2/services/preferences_service.dart';
 
 // Utils
 import 'dart:developer' as developer;
-import 'package:open_split_time_v2/services/network_manager.dart';
 import 'package:open_split_time_v2/services/crosscheck/raw_time_store.dart';
 import 'package:open_split_time_v2/utils/time_utils.dart';
 
 class LiveEntryController extends ChangeNotifier {
-  // States for the live entry screen
-  final NetworkManager _networkManager; // Not being used for now, only here because there's an import at the bottom that requires it for perhaps testing purposes
-
   final _prefs = PreferencesService();
 
   Map<int, Map<String, String>> _bibNumberToAtheleteInfo = {};
@@ -35,9 +30,7 @@ class LiveEntryController extends ChangeNotifier {
   String _eventName = '';
   String _eventSlug = '';
 
-  // Constructor, if needed, can accept a NetworkManager for easier testing
-  LiveEntryController({NetworkManager? networkManager})
-      : _networkManager = networkManager ?? NetworkManager();
+  LiveEntryController();
 
   // Methods to update states
   void updateBibNumber(String bibNumber) {
@@ -194,10 +187,6 @@ class LiveEntryController extends ChangeNotifier {
   }
 
   void appendEntry(newEntryJson) async {
-    // Get SharedPreferences instance
-    // TODO: Replace with PreferencesService
-
-    // Get existing list OR create a new empty list
     final storedJson = _prefs.rawTimes;
     List<dynamic> list = storedJson != null ? jsonDecode(storedJson) : [];
 
