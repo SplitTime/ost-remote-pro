@@ -1,5 +1,6 @@
 // live_entry.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 // Widgets
 import 'package:open_split_time_v2/widgets/live_entry_widgets/clock.dart';
@@ -28,6 +29,7 @@ class LiveEntryScreen extends StatefulWidget {
 class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
   final LiveEntryController _controller = LiveEntryController();
   final PreferencesService _prefs = PreferencesService();
+  final FocusNode _focusNode = FocusNode();
 
   bool _isStationPressed = false;
   bool _isLoading = true;
@@ -59,6 +61,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
   @override
   void initState() {
     super.initState();
+    _focusNode.requestFocus();
     // We can't access widget.parameters in initState, so we'll load data in didChangeDependencies
   }
 
@@ -72,6 +75,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
   @override
   void dispose() {
     LiveEntryScreen.routeObserver.unsubscribe(this);
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -102,16 +106,102 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
     });
   }
 
+  /// Returns the appropriate button widget(s) based on the aid station
+  Widget _buildStationButtons() {
+    if (_controller.aidStation == "Start") {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _controller.stationControl('out', _prefs.deviceID);
+                  _isStationPressed = true;
+                  _controller.updateBibNumber('');
+                });
+              },
+              child: const Text('Start'),
+            ),
+          ),
+        ],
+      );
+    } else if (_controller.aidStation == "Finish") {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _controller.stationControl('in', _prefs.deviceID);
+                  _isStationPressed = true;
+                  _controller.updateBibNumber('');
+                });
+              },
+              child: const Text('Finish'),
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _controller.stationControl('in', 'owens-laptop');
+                  _isStationPressed = true;
+                  _controller.updateBibNumber('');
+                });
+              },
+              child: Text('${_controller.aidStation} in'),
+            ),
+          ),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _controller.stationControl('out', 'owens-laptop');
+                  _isStationPressed = true;
+                  _controller.updateBibNumber('');
+                });
+              },
+              child: Text('${_controller.aidStation} out'),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Live Entry'),
-      ),
-      endDrawer: const PageRouterDrawer(),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
+    return RawKeyboardListener(
+      focusNode: _focusNode,
+      onKey: (RawKeyEvent event) {
+        if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
+          setState(() {
+            if (_controller.aidStation == "Finish") {
+              _controller.stationControl('in', _prefs.deviceID);
+            } else {
+              _controller.stationControl('in', 'keyboard-enter');
+            }
+            _isStationPressed = true;
+            _controller.updateBibNumber('');
+          });
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Live Entry'),
+        ),
+        endDrawer: const PageRouterDrawer(),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
           children: [
             // --- Top: Bib number and name ---
             Row(
@@ -201,31 +291,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
             const SizedBox(height: 10),
 
             // Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _controller.stationControl('in', 'owens-laptop');
-                      _isStationPressed = true;
-                      _controller.updateBibNumber('');
-                    });
-                  },
-                  child: Text('${_controller.aidStation} in'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _controller.stationControl('out', 'owens-laptop');
-                      _isStationPressed = true;
-                      _controller.updateBibNumber('');
-                    });
-                  },
-                  child: Text('${_controller.aidStation} out'),
-                ),
-              ],
-            ),
+            _buildStationButtons(),
 
             const SizedBox(height: 50),
             // Numpad
@@ -256,6 +322,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

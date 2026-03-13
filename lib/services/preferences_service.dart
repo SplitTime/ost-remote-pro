@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:open_split_time_v2/services/network_manager.dart';
+import 'package:uuid/uuid.dart';
 import 'dart:convert';
 
 class PreferencesService {
@@ -95,6 +96,23 @@ class PreferencesService {
     if (t == null || t.isEmpty) return false;
     if (exp == null) return true; // token exists but no expiry stored — assume valid
     return DateTime.now().isBefore(exp);
+  // UUID for device ID
+  String get deviceID {
+    String? id = _prefs.getString('device_id');
+    if (id == null) {
+      var uuid = Uuid();
+      id = uuid.v4();
+      _prefs.setString('device_id', id);
+    }
+    return id;
+  }
+  set deviceID(String? value) {
+    if (value != null) {
+      _prefs.setString('device_id', value);
+    } else {
+      var uuid = Uuid();
+      _prefs.setString('device_id', uuid.v4());
+    }
   }
 
   // Token Expiration

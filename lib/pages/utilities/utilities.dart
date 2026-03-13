@@ -3,6 +3,7 @@ import 'package:open_split_time_v2/pages/login.dart';
 import 'package:open_split_time_v2/pages/utilities/about_screen.dart';
 import 'package:open_split_time_v2/pages/utilities/refresh_loading.dart';
 import 'package:open_split_time_v2/pages/utilities/change_station_screen.dart';
+import 'package:open_split_time_v2/services/network_manager.dart';
 
 class UtilitiesPage extends StatelessWidget {
   const UtilitiesPage({super.key});
@@ -112,11 +113,24 @@ class UtilitiesPage extends StatelessWidget {
                     borderRadius: BorderRadius.zero,
                   ),
                 ),
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginPage()),
-                  );
+                onPressed: () async {
+                  final networkManager = NetworkManager();
+                  final isConnected = await networkManager.checkConnectivity();
+                  if(isConnected != 0) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                      (route) => false, // Remove all previous routes
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("No internet connection. Please connect to the internet to log out."),
+                        backgroundColor: Colors.red,
+                      ),
+                    );  
+                  }
+                  
                 },
                 child: const Text(
                   "Logout",

@@ -61,6 +61,22 @@ class NetworkManager {
         message = 'Sign-up failed (${response.statusCode}). Raw: $preview';
       }
       throw Exception(message);
+  Future<int> checkConnectivity() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${_baseUrl}'),
+      );
+      if(response.statusCode != 200) {
+        return 0;
+      } else {
+        _prefs.token = null;
+        _prefs.tokenExpiration = null;
+        _prefs.email = null;
+        return 1;
+      }
+    } catch (e) {
+      print('Connectivity check failed: $e');
+      return 0;
     }
   }
 
