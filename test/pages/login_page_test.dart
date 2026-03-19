@@ -16,10 +16,10 @@ void main() {
         const MaterialApp(home: LoginPage()),
       );
 
-      expect(find.text('Login Page'), findsOneWidget);
-      expect(find.text('Login'), findsOneWidget);
+      expect(find.text('OST Remote'), findsOneWidget);
+      expect(find.text('Log In'), findsOneWidget);
       expect(find.byType(TextField), findsNWidgets(2));
-      expect(find.byType(ElevatedButton), findsOneWidget);
+      expect(find.byType(FilledButton), findsOneWidget);
     });
 
     testWidgets('renders email field with correct label', (tester) async {
@@ -27,7 +27,7 @@ void main() {
         const MaterialApp(home: LoginPage()),
       );
 
-      expect(find.text('Enter your username'), findsOneWidget);
+      expect(find.text('Email'), findsOneWidget);
     });
 
     testWidgets('renders password field with correct label', (tester) async {
@@ -43,7 +43,8 @@ void main() {
         const MaterialApp(home: LoginPage()),
       );
 
-      final passwordField = tester.widgetList<TextField>(find.byType(TextField)).last;
+      final passwordField =
+          tester.widgetList<TextField>(find.byType(TextField)).last;
       expect(passwordField.obscureText, true);
     });
 
@@ -52,8 +53,7 @@ void main() {
         const MaterialApp(home: LoginPage()),
       );
 
-      final emailField = find.byType(TextField).first;
-      await tester.enterText(emailField, 'test@example.com');
+      await tester.enterText(find.byType(TextField).first, 'test@example.com');
       await tester.pump();
 
       expect(find.text('test@example.com'), findsOneWidget);
@@ -64,22 +64,20 @@ void main() {
         const MaterialApp(home: LoginPage()),
       );
 
-      final passwordField = find.byType(TextField).last;
-      await tester.enterText(passwordField, 'secret123');
+      await tester.enterText(find.byType(TextField).last, 'secret123');
       await tester.pump();
 
       expect(find.text('secret123'), findsOneWidget);
     });
 
-    testWidgets('no CircularProgressIndicator before login attempt', (tester) async {
+    testWidgets('no CircularProgressIndicator before login attempt',
+        (tester) async {
       await tester.pumpWidget(
         const MaterialApp(home: LoginPage()),
       );
 
-      // Before tapping login, no progress indicator should be shown
       expect(find.byType(CircularProgressIndicator), findsNothing);
-      // Login button should be visible
-      expect(find.text('Login'), findsOneWidget);
+      expect(find.text('Log In'), findsOneWidget);
     });
 
     testWidgets('pre-fills email from stored preferences', (tester) async {
@@ -98,16 +96,13 @@ void main() {
         const MaterialApp(home: LoginPage()),
       );
 
-      // Fill and submit
       await tester.enterText(find.byType(TextField).first, 'bad@email.com');
       await tester.enterText(find.byType(TextField).last, 'wrongpassword');
-      await tester.tap(find.text('Login'));
-
-      // Wait for the network call to fail
+      await tester.tap(find.text('Log In'));
       await tester.pumpAndSettle();
 
-      // Should show error text
-      expect(find.text('Login failed. Please check your credentials.'), findsOneWidget);
+      expect(find.text('Login failed. Please check your credentials.'),
+          findsOneWidget);
     });
 
     testWidgets('has an AppBar with correct title', (tester) async {
@@ -116,7 +111,16 @@ void main() {
       );
 
       expect(find.byType(AppBar), findsOneWidget);
-      expect(find.text('Login Page'), findsOneWidget);
+      expect(find.text('OST Remote'), findsOneWidget);
+    });
+
+    testWidgets('has a Sign Up link', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: LoginPage()),
+      );
+
+      expect(find.text("Don't have an account?"), findsOneWidget);
+      expect(find.text('Sign Up'), findsOneWidget);
     });
   });
 }

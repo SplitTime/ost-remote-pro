@@ -73,7 +73,7 @@ class _EventSelectState extends State<EventSelect> {
           name: 'EventSelect._navigateToLiveEntry',
         );
       } catch (e) {
-        print("$e"); // Basic debug, consider better handling later.
+        developer.log('$e', name: 'EventSelect._navigateToLiveEntry');
       }
       if (eventSlug != null) {
         // Save selections to preferences

@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:open_split_time_v2/services/preferences_service.dart';
-
-// Utils
 import 'dart:developer' as developer;
-import 'package:open_split_time_v2/services/network_manager.dart';
 import 'package:open_split_time_v2/services/crosscheck/raw_time_store.dart';
 import 'package:open_split_time_v2/utils/time_utils.dart';
+import 'package:open_split_time_v2/services/network_manager.dart';
 
 class LiveEntryController extends ChangeNotifier {
-  // States for the live entry screen
-  final NetworkManager _networkManager; // Not being used for now, only here because there's an import at the bottom that requires it for perhaps testing purposes
-
   final _prefs = PreferencesService();
+  final NetworkManager _networkManager; // injectable for testing
 
   Map<int, Map<String, String>> _bibNumberToAtheleteInfo = {};
 
@@ -35,7 +30,6 @@ class LiveEntryController extends ChangeNotifier {
   String _eventName = '';
   String _eventSlug = '';
 
-  // Constructor, if needed, can accept a NetworkManager for easier testing
   LiveEntryController({NetworkManager? networkManager})
       : _networkManager = networkManager ?? NetworkManager();
 

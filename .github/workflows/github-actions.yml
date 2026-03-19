@@ -11,8 +11,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+      - name: Install dependencies
+        run: flutter pub get
       - name: Run tests
         run: |
-          flutter test ./test/services/preferences_service_test.dart
-          flutter test ./test/controllers/live_entry_controller_test.dart
-          flutter test ./test/live_entry_test.dart
+          flutter test \
+            test/utils/time_utils_test.dart \
+            test/services/preferences_service_test.dart \
+            test/services/raw_time_store_test.dart \
+            test/services/cross_check_service_test.dart \
+            test/controllers/live_entry_controller_test.dart \
+            test/pages/login_page_test.dart \
+            test/pages/signup_page_test.dart \
+            test/widgets/numpad_test.dart \
+            test/widgets/two_state_toggle_test.dart \
+            test/widgets/clock_widget_test.dart \
+            test/pages/utilities_page_test.dart \
+            test/pages/cross_check_page_test.dart \
+            test/pages/review_sync_page_test.dart \
+            test/pages/live_entry_page_test.dart

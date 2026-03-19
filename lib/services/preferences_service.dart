@@ -16,8 +16,7 @@ class PreferencesService {
   }
 
   Future<void> clear(String key) async {
-    if(key == null || key.isEmpty) {
-      // Just clear everything in the event of an empty key, perhaps we could discuss if this should error
+    if (key.isEmpty) {
       await clearAll();
       return;
     }
@@ -152,7 +151,6 @@ class PreferencesService {
     try {
       final List<String> participants = await networkManager.fetchParticipantDetailsForGivenEvent(eventSlug: selectedEventSlug);
       participantInfoForSelectedEvent = participants;
-      print(participantInfoForSelectedEvent);
       return 1; // Success
     } catch (e) {
       return 0; // On error, return 0
