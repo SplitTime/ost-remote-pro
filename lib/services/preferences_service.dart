@@ -91,21 +91,27 @@ class PreferencesService {
   }
 
   // UUID for device ID
+  static const String _deviceIDPrefix = 'ost-remote-entry-2-';
+
+  String _buildDeviceID() {
+    return '$_deviceIDPrefix${Uuid().v4()}';
+  }
+
   String get deviceID {
     String? id = _prefs.getString('device_id');
-    if (id == null) {
-      var uuid = Uuid();
-      id = uuid.v4();
+    if (id == null || !id.startsWith(_deviceIDPrefix)) {
+      id = _buildDeviceID();
       _prefs.setString('device_id', id);
     }
     return id;
   }
+
   set deviceID(String? value) {
     if (value != null) {
-      _prefs.setString('device_id', value);
+      final normalizedValue = value.startsWith(_deviceIDPrefix) ? value : '$_deviceIDPrefix$value';
+      _prefs.setString('device_id', normalizedValue);
     } else {
-      var uuid = Uuid();
-      _prefs.setString('device_id', uuid.v4());
+      _prefs.setString('device_id', _buildDeviceID());
     }
   }
 
