@@ -91,7 +91,7 @@ class PreferencesService {
   }
 
   // UUID for device ID
-  static const String _deviceIDPrefix = 'ost-remote-entry-2-';
+  static const String _deviceIDPrefix = 'ost-remote-2-';
 
   String _buildDeviceID() {
     return '$_deviceIDPrefix${Uuid().v4()}';
