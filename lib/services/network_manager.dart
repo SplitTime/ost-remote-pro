@@ -4,7 +4,7 @@ import 'dart:developer' as developer;
 import 'package:open_split_time_v2/services/preferences_service.dart';
 
 class NetworkManager {
-  static const _baseUrl = 'https://staging.opensplittime.org/';
+  static const _baseUrl = 'https://www.opensplittime.org/';
   final PreferencesService _prefs = PreferencesService();
 
   Future<int> checkConnectivity() async {
