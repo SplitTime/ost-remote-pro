@@ -9,10 +9,8 @@ class NetworkManager {
 
   Future<int> checkConnectivity() async {
     try {
-      final response = await http.get(
-        Uri.parse('${_baseUrl}'),
-      );
-      if(response.statusCode != 200) {
+      final response = await http.get(Uri.parse(_baseUrl));
+      if (response.statusCode != 200) {
         return 0;
       } else {
         _prefs.token = null;
@@ -21,7 +19,7 @@ class NetworkManager {
         return 1;
       }
     } catch (e) {
-      print('Connectivity check failed: $e');
+      developer.log('Connectivity check failed: $e', name: 'NetworkManager.checkConnectivity');
       return 0;
     }
   }

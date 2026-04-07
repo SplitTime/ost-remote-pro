@@ -104,7 +104,6 @@ class AboutScreen extends StatelessWidget {
                 minimumSize: const Size.fromHeight(50),
               ),
               onPressed: () {
-                //Navigator.pop(context);
                 Navigator.pushNamed(context, '/liveEntry', arguments: {
                 'event': 'Demo Event',
                 'aidStation': 'Demo Station',
