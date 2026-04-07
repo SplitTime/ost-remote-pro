@@ -154,7 +154,7 @@ class NetworkManager {
                       }
                     }
                   } catch (e) {
-                    print('Error processing event: $e');
+                    developer.log('Error processing event: $e', name: 'NetworkManager.fetchEventDetails');
                     continue;
                   }
                 }

@@ -254,7 +254,7 @@ class _ReviewSyncPageState extends State<ReviewSyncPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${_prefs.selectedEvent}',
+                    _prefs.selectedEvent,
                     style: TextStyle(fontSize: 20),
                   ),
                   Text(

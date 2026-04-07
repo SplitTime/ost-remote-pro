@@ -222,19 +222,18 @@ void main() {
 
     // --- Negative / edge case tests ---
 
-    test('stationControl with empty bib number throws FormatException', () {
-      // _bibNumber is '' by default; int.parse('') inside stationControl throws
+    test('stationControl with empty bib number returns without throwing', () {
       expect(
         () => controller.stationControl('in', 'device'),
-        throwsA(isA<FormatException>()),
+        returnsNormally,
       );
     });
 
-    test('stationControl with non-numeric bib throws FormatException', () {
+    test('stationControl with non-numeric bib returns without throwing', () {
       controller.updateBibNumber('abc');
       expect(
         () => controller.stationControl('in', 'device'),
-        throwsA(isA<FormatException>()),
+        returnsNormally,
       );
     });
 

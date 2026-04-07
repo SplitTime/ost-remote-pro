@@ -4,11 +4,9 @@ import 'package:open_split_time_v2/services/preferences_service.dart';
 import 'dart:developer' as developer;
 import 'package:open_split_time_v2/services/crosscheck/raw_time_store.dart';
 import 'package:open_split_time_v2/utils/time_utils.dart';
-import 'package:open_split_time_v2/services/network_manager.dart';
 
 class LiveEntryController extends ChangeNotifier {
   final _prefs = PreferencesService();
-  final NetworkManager _networkManager; // injectable for testing
 
   Map<int, Map<String, String>> _bibNumberToAtheleteInfo = {};
 
@@ -30,8 +28,7 @@ class LiveEntryController extends ChangeNotifier {
   String _eventName = '';
   String _eventSlug = '';
 
-  LiveEntryController({NetworkManager? networkManager})
-      : _networkManager = networkManager ?? NetworkManager();
+  LiveEntryController();
 
   // Methods to update states
   void updateBibNumber(String bibNumber) {
@@ -147,8 +144,15 @@ class LiveEntryController extends ChangeNotifier {
 
     _entryTime = DateTime.now();
 
+    final bib = int.tryParse(_bibNumber);
+    if (bib == null) {
+      developer.log('Invalid bib number: $_bibNumber',
+          name: 'LiveEntryController');
+      return;
+    }
+
     // if bibNumber is not found in _bibNumberToName, log and return
-    if (_bibNumberToAtheleteInfo[int.parse(_bibNumber)] == null) {
+    if (_bibNumberToAtheleteInfo[bib] == null) {
       developer.log('Bib number not found: $_bibNumber',
           name: 'LiveEntryController');
       return;
@@ -180,17 +184,14 @@ class LiveEntryController extends ChangeNotifier {
     RawTimeStore.add(RawTimeEntry(
       eventSlug: _eventSlug,
       splitName: _aidStation,
-      bibNumber: int.parse(_bibNumber),
+      bibNumber: bib,
       subSplitKind: inOut,
       stoppedHere: !_isContinuing,
       enteredTime: enteredTime,
     ));
   }
 
-  void appendEntry(newEntryJson) async {
-    // Get SharedPreferences instance
-    // TODO: Replace with PreferencesService
-
+  void appendEntry(Map<String, dynamic> newEntryJson) {
     // Get existing list OR create a new empty list
     final storedJson = _prefs.rawTimes;
     List<dynamic> list = storedJson != null ? jsonDecode(storedJson) : [];
