@@ -152,7 +152,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
             child: ElevatedButton(
               onPressed: () {
                 setState(() {
-                  _controller.stationControl('in', 'owens-laptop');
+                  _controller.stationControl('in', _prefs.deviceID);
                   _isStationPressed = true;
                   _controller.updateBibNumber('');
                 });
@@ -164,7 +164,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
             child: ElevatedButton(
               onPressed: () {
                 setState(() {
-                  _controller.stationControl('out', 'owens-laptop');
+                  _controller.stationControl('out', _prefs.deviceID);
                   _isStationPressed = true;
                   _controller.updateBibNumber('');
                 });

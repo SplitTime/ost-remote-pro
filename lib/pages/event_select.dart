@@ -48,6 +48,15 @@ class _EventSelectState extends State<EventSelect> {
       });
 
       final eventAidStations = await _networkManager.fetchEventDetails();
+      
+      // Validate that saved selections still exist
+      if (!eventAidStations.containsKey(_selectedEvent)) {
+        _selectedEvent = null;
+        _selectedAidStation = null;
+      } else if (_selectedAidStation != null && !eventAidStations[_selectedEvent]!.contains(_selectedAidStation)) {
+        _selectedAidStation = null;
+      }
+      
       setState(() {
         _eventAidStations = eventAidStations;
         _isLoading = false;
