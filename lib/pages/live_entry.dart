@@ -33,6 +33,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
 
   bool _isStationPressed = false;
   bool _isLoading = true;
+  String _lastBib = '';
 
   void _showEditSheet() {
     // Format date and time separately
@@ -46,8 +47,9 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
       isScrollControlled: true, // Allows sheet to grow if needed
       builder: (context) {
         return EditEntryBottomSheet(
+          controller: _controller,
           eventName: _controller.eventName,
-          bibNumber: _controller.bibNumber,
+          bibNumber: _lastBib,
           athleteName: _controller.athleteName,
           date: dateStr,
           time: timeStr,
@@ -62,6 +64,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
   void initState() {
     super.initState();
     _focusNode.requestFocus();
+    _controller.addListener(() => setState(() {}));
     // We can't access widget.parameters in initState, so we'll load data in didChangeDependencies
   }
 
@@ -76,6 +79,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
   void dispose() {
     LiveEntryScreen.routeObserver.unsubscribe(this);
     _focusNode.dispose();
+    _controller.removeListener(() => setState(() {}));
     super.dispose();
   }
 
@@ -116,6 +120,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
             child: ElevatedButton(
               onPressed: () {
                 setState(() {
+                  _lastBib = _controller.bibNumber;
                   _controller.stationControl('out', _prefs.deviceID);
                   _isStationPressed = true;
                   _controller.updateBibNumber('');
@@ -134,6 +139,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
             child: ElevatedButton(
               onPressed: () {
                 setState(() {
+                  _lastBib = _controller.bibNumber;
                   _controller.stationControl('in', _prefs.deviceID);
                   _isStationPressed = true;
                   _controller.updateBibNumber('');
@@ -152,6 +158,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
             child: ElevatedButton(
               onPressed: () {
                 setState(() {
+                  _lastBib = _controller.bibNumber;
                   _controller.stationControl('in', _prefs.deviceID);
                   _isStationPressed = true;
                   _controller.updateBibNumber('');
@@ -164,6 +171,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
             child: ElevatedButton(
               onPressed: () {
                 setState(() {
+                  _lastBib = _controller.bibNumber;
                   _controller.stationControl('out', _prefs.deviceID);
                   _isStationPressed = true;
                   _controller.updateBibNumber('');
@@ -184,6 +192,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
       onKey: (RawKeyEvent event) {
         if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
           setState(() {
+            _lastBib = _controller.bibNumber;
             if (_controller.aidStation == "Finish") {
               _controller.stationControl('in', _prefs.deviceID);
             } else {
@@ -248,7 +257,7 @@ class _LiveEntryScreenState extends State<LiveEntryScreen> with RouteAware {
                               isStationPressed: _isStationPressed,
                               atheleteOrigin: _controller.athleteOrigin,
                               showEditSheet: _showEditSheet,
-                              lastBib: _controller.bibNumber,
+                              lastBib: _lastBib,
                               lastEntryTime: _controller.entryTime,
                             ),
                           ],
