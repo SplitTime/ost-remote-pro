@@ -201,4 +201,55 @@ class LiveEntryController extends ChangeNotifier {
     // Save updated list
     _prefs.rawTimes = jsonEncode(list);
   }
+
+  void editLastEntry(String newBib, DateTime newDateTime, bool newIsContinuing, bool newHasPacer) {
+    final storedJson = _prefs.rawTimes;
+    if (storedJson == null) return;
+    List<dynamic> list = jsonDecode(storedJson);
+    if (list.isEmpty) return;
+
+    // Find the last entry (assuming it's the last one)
+    var lastEntry = list.last;
+    if (lastEntry['attributes'] != null) {
+      lastEntry['attributes']['bib_number'] = newBib;
+      lastEntry['attributes']['entered_time'] = TimeUtils.formatEnteredTimeLocal(newDateTime);
+      lastEntry['attributes']['stopped_here'] = (!newIsContinuing).toString();
+      lastEntry['attributes']['with_pacer'] = newHasPacer.toString();
+    }
+
+    // Save updated list
+    _prefs.rawTimes = jsonEncode(list);
+
+    // Also update RawTimeStore
+    RawTimeStore.editLast(RawTimeEntry(
+      eventSlug: _eventSlug,
+      splitName: _aidStation,
+      bibNumber: int.parse(newBib),
+      subSplitKind: lastEntry['attributes']['sub_split_kind'] ?? 'in',
+      stoppedHere: !newIsContinuing,
+      enteredTime: TimeUtils.formatEnteredTimeLocal(newDateTime),
+    ));
+
+    // Update controller state
+    updateBibNumber(newBib);
+    _entryTime = newDateTime;
+    toggleIsContinuing(newIsContinuing);
+    toggleHasPacer(newHasPacer);
+    updateAthleteInfo();
+  }
+
+  void deleteLastEntry() {
+    final storedJson = _prefs.rawTimes;
+    if (storedJson == null) return;
+    List<dynamic> list = jsonDecode(storedJson);
+    if (list.isEmpty) return;
+
+    list.removeLast();
+
+    // Save updated list
+    _prefs.rawTimes = jsonEncode(list);
+
+    // Also remove from RawTimeStore
+    RawTimeStore.removeLast(_eventSlug);
+  }
 }

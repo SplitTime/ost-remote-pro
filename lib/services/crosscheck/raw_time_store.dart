@@ -57,6 +57,32 @@ class RawTimeStore {
     await prefs.setString(k, jsonEncode(list));
   }
 
+  static Future<void> editLast(RawTimeEntry newEntry) async {
+    final prefs = await SharedPreferences.getInstance();
+    final k = _key(newEntry.eventSlug);
+
+    final current = prefs.getString(k);
+    if (current == null) return;
+    final List<dynamic> list = jsonDecode(current) as List<dynamic>;
+    if (list.isEmpty) return;
+
+    list.last = newEntry.toJson();
+    await prefs.setString(k, jsonEncode(list));
+  }
+
+  static Future<void> removeLast(String eventSlug) async {
+    final prefs = await SharedPreferences.getInstance();
+    final k = _key(eventSlug);
+
+    final current = prefs.getString(k);
+    if (current == null) return;
+    final List<dynamic> list = jsonDecode(current) as List<dynamic>;
+    if (list.isEmpty) return;
+
+    list.removeLast();
+    await prefs.setString(k, jsonEncode(list));
+  }
+
   static Future<List<RawTimeEntry>> list(String eventSlug) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_key(eventSlug));

@@ -1,9 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:open_split_time_v2/widgets/live_entry_widgets/two_state_toggle.dart';
-import 'dart:developer' as developer;
+import 'package:open_split_time_v2/controllers/live_entry_controller.dart';
 
 class EditEntryBottomSheet extends StatefulWidget {
+  final LiveEntryController controller;
   final String eventName;
   final String bibNumber;
   final String athleteName;
@@ -14,6 +15,7 @@ class EditEntryBottomSheet extends StatefulWidget {
 
   const EditEntryBottomSheet({
     super.key,
+    required this.controller,
     required this.eventName,
     required this.bibNumber,
     required this.athleteName,
@@ -35,12 +37,14 @@ class _EditEntryBottomSheetState extends State<EditEntryBottomSheet> {
 
   bool isContinuing = false;
   bool hasPacer = false;
+  String currentAthleteName = '';
 
   @override
   void initState() {
     super.initState();
     isContinuing = widget.isContinuing;
     hasPacer = widget.hasPacer;
+    currentAthleteName = widget.athleteName;
     _bibController = TextEditingController(text: widget.bibNumber);
 
     // 1. Parse Date
@@ -233,13 +237,20 @@ class _EditEntryBottomSheetState extends State<EditEntryBottomSheet> {
                       border: OutlineInputBorder(),
                     ),
                     style: const TextStyle(fontSize: 16),
+                    onChanged: (value) {
+                      widget.controller.updateBibNumber(value);
+                      widget.controller.updateAthleteInfo();
+                      setState(() {
+                        currentAthleteName = widget.controller.athleteName;
+                      });
+                    },
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 10),
 
-            _buildInfoRow('Bib Found:', widget.athleteName),
+            _buildInfoRow('Bib Found:', currentAthleteName),
 
             // --- Editable Date (Cupertino) ---
             Padding(
@@ -338,7 +349,7 @@ class _EditEntryBottomSheetState extends State<EditEntryBottomSheet> {
                     ),
                     onPressed: () {
                       // TODO: Delete Logic
-                      developer.log("Delete requested for bib ${_bibController.text}");
+                      widget.controller.deleteLastEntry();
                       Navigator.pop(context);
                     },
                     child: const Text('Delete'),
@@ -353,10 +364,20 @@ class _EditEntryBottomSheetState extends State<EditEntryBottomSheet> {
                     ),
                     onPressed: () {
                       // TODO: Update Logic
-                      developer.log("Update requested:");
-                      developer.log("Bib: ${_bibController.text}");
-                      developer.log("Date: $_formattedDate");
-                      developer.log("Time: $_formattedTime");
+                      final newDateTime = DateTime(
+                        _selectedDate.year,
+                        _selectedDate.month,
+                        _selectedDate.day,
+                        _selectedDuration.inHours,
+                        _selectedDuration.inMinutes % 60,
+                        _selectedDuration.inSeconds % 60,
+                      );
+                      widget.controller.editLastEntry(
+                        _bibController.text,
+                        newDateTime,
+                        isContinuing,
+                        hasPacer,
+                      );
                       Navigator.pop(context);
                     },
                     child: const Text('Update'),

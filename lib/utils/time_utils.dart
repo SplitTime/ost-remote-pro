@@ -3,8 +3,8 @@ class TimeUtils {
   /// Formats the current local time into a string with the format:
   /// "YYYY-MM-DD HH:MM:SS±HH:MM"
   /// Example: "2024-06-15 14:30:45+02:00"
-  static String formatEnteredTimeLocal() {
-    final now = DateTime.now();
+  static String formatEnteredTimeLocal([DateTime? dateTime]) {
+    final now = dateTime ?? DateTime.now();
     final y = now.year.toString().padLeft(4, '0');
     final mo = now.month.toString().padLeft(2, '0');
     final d = now.day.toString().padLeft(2, '0');
