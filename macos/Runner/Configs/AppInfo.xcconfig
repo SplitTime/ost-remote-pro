@@ -8,7 +8,7 @@
 PRODUCT_NAME = open_split_time_v2
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.openSplitTimeV2
+PRODUCT_BUNDLE_IDENTIFIER = org.opensplittime.ostremote2
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2025 com.example. All rights reserved.
