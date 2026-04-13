@@ -10,7 +10,11 @@ import 'package:open_split_time_v2/pages/crosscheck/cross_check.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  await PreferencesService().init();
+  try {
+    await PreferencesService().init();
+  } catch (e) {
+    debugPrint('PreferencesService init failed: $e');
+  }
   runApp(const MyApp());
 }
 

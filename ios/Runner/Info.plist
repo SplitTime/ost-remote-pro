@@ -50,7 +50,12 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>This app may access devices on your local network when needed.</string>
 	<key>NSBonjourServices</key>
-	<array/>
+	<array>
+		<string>_dartobservatory._tcp</string>
+		<string>_dartVmService._tcp</string>
+	</array>
 </dict>
 </plist>
